@@ -1,0 +1,10 @@
+[
+  {
+    "_id": "ahamiy0947mo0eev2kf9bk",
+    "createdAt": "2026-06-11T16:07:23.772Z",
+    "name": "Admin User",
+    "email": "admin@automajid.com",
+    "password": "$2a$10$RS8eO1EehbcC1.bourahiuW8UlhqGH0/RX4C6O/BDUjExw12g.WDK",
+    "role": "admin"
+  }
+]
