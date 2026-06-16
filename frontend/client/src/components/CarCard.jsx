@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Settings, Gauge, Heart, Users } from 'lucide-react';
+import { formatCurrency } from '../utils/format.utils';
 
 const CarCard = ({ vehicle }) => {
   return (
@@ -31,7 +32,7 @@ const CarCard = ({ vehicle }) => {
         
         <div className="mt-auto pt-4 border-t border-primary-800 flex justify-between items-center">
           <div className="text-2xl font-bold text-accent">
-            ${vehicle.price.toLocaleString()}
+            {formatCurrency(vehicle.price)}
           </div>
           <Link to={`/listings/${vehicle._id}`} className="bg-primary-800 hover:bg-accent hover:text-primary-950 text-white px-4 py-2 rounded-full text-sm font-bold transition-colors">
             Details

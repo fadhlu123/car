@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api';
+import { getProducts } from '../services/inventory.service';
 import CarCard from '../components/CarCard';
 
 const Listings = () => {
@@ -8,7 +8,7 @@ const Listings = () => {
 
   const fetchVehicles = async () => {
     try {
-      const { data } = await api.get('/vehicles');
+      const data = await getProducts();
       setVehicles(data);
     } catch (error) {
       console.error('Error fetching vehicles:', error);

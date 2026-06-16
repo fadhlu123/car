@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Calendar, Car as CarIcon, HeadphonesIcon, ArrowRight, Heart, Users, Settings, Gauge, CheckCircle2, Gift, Star, MapPin } from 'lucide-react';
-import api from '../api';
+import { getProducts } from '../services/inventory.service';
 
 const Home = () => {
   const [featuredCars, setFeaturedCars] = useState([]);
@@ -9,7 +9,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCars = async () => {
       try {
-        const { data } = await api.get('/vehicles');
+        const data = await getProducts();
         setFeaturedCars(data.slice(0, 4));
       } catch (error) {
         console.error('Failed to fetch featured cars:', error);

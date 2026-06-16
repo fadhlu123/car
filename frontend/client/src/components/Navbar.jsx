@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Car, Menu, X, User as UserIcon } from 'lucide-react';
+import { Car, Menu, X, User as UserIcon, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
+  const { cartItems } = useCart();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -43,6 +45,14 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex space-x-4 items-center">
+                <Link to="/cart" className="relative p-2 text-white hover:text-accent transition-colors">
+                  <ShoppingCart className="h-6 w-6" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary-950 bg-accent rounded-full transform translate-x-1/4 -translate-y-1/4">
+                      {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                    </span>
+                  )}
+                </Link>
                 <Link to="/login" className="btn-outline">Sign In</Link>
                 <Link to="/register" className="btn-primary">Book Now</Link>
               </div>
@@ -76,6 +86,10 @@ const Navbar = () => {
             </>
           ) : (
             <div className="flex flex-col space-y-3 pt-4 border-t border-primary-800">
+              <Link to="/cart" className="text-white hover:text-accent flex items-center justify-center py-2">
+                <ShoppingCart className="h-5 w-5 mr-2" />
+                Cart ({cartItems.reduce((acc, item) => acc + item.quantity, 0)})
+              </Link>
               <Link to="/login" className="btn-outline text-center block py-3">Sign In</Link>
               <Link to="/register" className="btn-primary text-center block py-3">Book Now</Link>
             </div>
