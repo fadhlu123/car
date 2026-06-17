@@ -1,0 +1,17 @@
+{{> header}}
+
+<h2>New sign-in detected</h2>
+<p>Hi {{firstName}},</p>
+<p>A new sign-in to your <strong>{{appName}}</strong> account was detected. Here are the details:</p>
+
+<div style="background:#f8fafc;border-radius:6px;padding:20px;margin:20px 0;">
+  <div class="info-row"><span>Time</span><span>{{time}}</span></div>
+  <div class="info-row"><span>Device</span><span>{{device}}</span></div>
+  <div class="info-row" style="border-bottom:none;"><span>IP Address</span><span>{{ip}}</span></div>
+</div>
+
+<div class="alert-box">
+  <p>&#9888; If this was not you, change your password immediately and contact us.</p>
+</div>
+
+{{> footer}}

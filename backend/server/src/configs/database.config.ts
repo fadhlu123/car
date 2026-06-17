@@ -1,13 +1,17 @@
 import mongoose from 'mongoose';
 import { env } from './env.config';
-import { logger } from '../utils/logger.utils';
+import { createLogger } from '../utils/logger.utils';
+
+const logger = createLogger('database');
 
 class DatabaseManager {
   private static instance: DatabaseManager;
   private isConnected: boolean = false;
   private connectionAttempts: number = 0;
   private readonly maxRetries: number = 5;
-  private readonly initialRetryDelay: number = 1000; // 1 second
+  private readonly initialRetryDelay: number = 1000;
+  // Named connections — one per module database (auto-majid-users, auto-majid-inventory, etc.)
+  private readonly namedConnections: Map<string, mongoose.Connection> = new Map();
 
   private constructor() {
     this.setupEventListeners();
@@ -85,15 +89,20 @@ class DatabaseManager {
   }
 
   public async disconnect(): Promise<void> {
-    if (!this.isConnected) {
-      return;
-    }
-
     try {
-      await mongoose.disconnect();
-      this.isConnected = false;
-      logger.info('MongoDB disconnected gracefully');
-    } catch (error:any) {
+      for (const [dbName, conn] of this.namedConnections) {
+        await conn.close();
+        logger.info(`Closed connection to module database: ${dbName}`);
+      }
+      this.namedConnections.clear();
+
+      if (this.isConnected) {
+        await mongoose.disconnect();
+        this.isConnected = false;
+      }
+
+      logger.info('All database connections closed gracefully');
+    } catch (error: any) {
       logger.error('Error disconnecting from MongoDB:', error);
       throw error;
     }
@@ -143,6 +152,30 @@ class DatabaseManager {
 
   public isHealthy(): boolean {
     return this.isConnected && mongoose.connection.readyState === 1;
+  }
+
+  // Returns a cached named connection for a module database.
+  // Each module calls this with its own DB name (e.g. 'auto-majid-users').
+  public async getConnection(dbName: string): Promise<mongoose.Connection> {
+    const cached = this.namedConnections.get(dbName);
+    if (cached && cached.readyState === 1) return cached;
+
+    const conn = await mongoose.createConnection(this.buildUri(dbName), {
+      maxPoolSize: 10,
+      connectTimeoutMS: 30000,
+      serverSelectionTimeoutMS: 30000,
+      family: 4,
+    }).asPromise();
+
+    this.namedConnections.set(dbName, conn);
+    logger.info(`Connected to module database: ${dbName}`);
+    return conn;
+  }
+
+  // Replaces the database name segment in the Atlas URI.
+  // e.g. .../car_dealership -> .../auto-majid-users
+  private buildUri(dbName: string): string {
+    return env.MONGODB_URI.replace(/\/([^/?]*)(\?|$)/, `/${dbName}$2`);
   }
 }
 

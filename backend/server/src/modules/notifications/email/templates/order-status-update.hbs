@@ -1,0 +1,25 @@
+{{> header}}
+
+<h2>Order status update</h2>
+<p>Hi {{customer.name}},</p>
+<p>
+  There is an update on your order <strong>#{{shortId}}</strong>.
+</p>
+
+<div style="display:flex;align-items:center;gap:12px;background:#f8fafc;border-radius:8px;padding:20px;margin:20px 0;">
+  <span class="status-badge status-{{previousStatus}}">{{previousStatus}}</span>
+  <span style="font-size:18px;color:#94a3b8;">&rarr;</span>
+  <span class="status-badge status-{{newStatus}}">{{newStatus}}</span>
+</div>
+
+{{#if (eq newStatus "contacted")}}
+<p>Our team has been in touch or will reach out to you shortly. Please ensure your phone is accessible.</p>
+{{else if (eq newStatus "completed")}}
+<p>Your order has been completed. Thank you for choosing <strong>{{appName}}</strong>. We hope to serve you again!</p>
+{{else if (eq newStatus "cancelled")}}
+<p>Your order has been cancelled. If you have any questions, please don't hesitate to contact us.</p>
+{{/if}}
+
+<p style="font-size:13px;color:#64748b;">Reference: <strong>#{{shortId}}</strong></p>
+
+{{> footer}}

@@ -1,0 +1,46 @@
+{{> header}}
+
+<h2>We have received your order!</h2>
+<p>Hi {{customer.name}},</p>
+<p>
+  Thank you for your interest. Your order <strong>#{{shortId}}</strong> has been received
+  and our team will contact you shortly to discuss the next steps.
+</p>
+
+<h3 style="font-size:16px;color:#0f172a;margin:24px 0 12px;">Order Summary</h3>
+
+<table class="items">
+  <thead>
+    <tr>
+      <th>Vehicle</th>
+      <th style="text-align:right;">Qty</th>
+      <th style="text-align:right;">Price</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each items}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td style="text-align:right;">{{this.quantity}}</td>
+      <td style="text-align:right;">{{../currency}} {{this.price}}</td>
+    </tr>
+    {{/each}}
+    <tr class="total-row">
+      <td colspan="2">Total</td>
+      <td style="text-align:right;">{{currency}} {{total}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 style="font-size:16px;color:#0f172a;margin:24px 0 12px;">Your Contact Details</h3>
+<div style="background:#f8fafc;border-radius:6px;padding:20px;">
+  <div class="info-row"><span>Name</span><span>{{customer.name}}</span></div>
+  <div class="info-row"><span>Email</span><span>{{customer.email}}</span></div>
+  <div class="info-row" style="border-bottom:none;"><span>Phone</span><span>{{customer.phone}}</span></div>
+</div>
+
+<p style="margin-top:20px;font-size:13px;color:#64748b;">
+  Your reference number is <strong>#{{shortId}}</strong>. Keep it handy for any follow-up queries.
+</p>
+
+{{> footer}}

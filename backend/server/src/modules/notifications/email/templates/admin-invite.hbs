@@ -1,0 +1,24 @@
+{{> header}}
+
+<h2>You have been invited to join the team</h2>
+<p>Hi,</p>
+<p>
+  <strong>{{inviterName}}</strong> has invited you to join the <strong>{{appName}}</strong>
+  admin team. Accept the invitation using the link below.
+  This link expires in <strong>{{expiryDays}} days</strong>.
+</p>
+
+<p style="text-align:center;margin:32px 0;">
+  <a class="btn" href="{{inviteUrl}}">Accept Invitation</a>
+</p>
+
+<p style="font-size:13px;color:#64748b;">
+  Or copy and paste this link into your browser:<br />
+  <span style="word-break:break-all;color:#2563eb;">{{inviteUrl}}</span>
+</p>
+
+<div class="alert-box">
+  <p>If you were not expecting this invitation, you can safely ignore this email.</p>
+</div>
+
+{{> footer}}

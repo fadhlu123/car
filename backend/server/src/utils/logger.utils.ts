@@ -37,17 +37,23 @@ const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.errors({ stack: true }),
   winston.format.printf((info) => {
-    const { timestamp, level, message, requestId, userId, ...meta } = info;
-    
-    let logMessage = `[${timestamp}] ${level}: ${message}`;
-    
+    const { timestamp, level, message, label, requestId, userId, ...meta } = info;
+
+    let logMessage = `[${timestamp}] ${level}`;
+    if (label) logMessage += ` [${label}]`;
+    logMessage += `: ${message}`;
+
     if (requestId) logMessage += ` [ReqID: ${requestId}]`;
     if (userId) logMessage += ` [UserID: ${userId}]`;
-    
-    if (Object.keys(meta).length > 0) {
-      logMessage += `\n${JSON.stringify(meta, null, 2)}`;
+
+    // Strip defaultMeta fields (service, environment) so they don't clutter console output
+    const cleanMeta = Object.fromEntries(
+      Object.entries(meta).filter(([k]) => !['service', 'environment'].includes(k))
+    );
+    if (Object.keys(cleanMeta).length > 0) {
+      logMessage += `\n${JSON.stringify(cleanMeta, null, 2)}`;
     }
-    
+
     return logMessage;
   })
 );
@@ -121,22 +127,25 @@ export const logger = winston.createLogger({
 
 // Custom logging methods with context
 export class Logger {
-  private requestId?: string;
-  private userId?: string;
+  constructor(
+    private label: string,
+    private requestId?: string,
+    private userId?: string
+  ) {}
 
-  constructor(requestId?: string, userId?: string) {
-    this.requestId = requestId;
-    this.userId = userId;
-  }
+  private log(level: string, message: string, meta?: object): void {
+    // Error objects have non-enumerable properties — extract them explicitly
+    const resolvedMeta: Record<string, unknown> =
+      meta instanceof Error
+        ? { error: meta.message, stack: meta.stack }
+        : { ...(meta as Record<string, unknown>) };
 
-  private log(level: string, message: string, meta?: object) {
-    const logData = {
-      ...meta,
+    logger.log(level, message, {
+      label: this.label,
+      ...resolvedMeta,
       ...(this.requestId && { requestId: this.requestId }),
-      ...(this.userId && { userId: this.userId })
-    };
-
-    logger.log(level, message, logData);
+      ...(this.userId && { userId: this.userId }),
+    });
   }
 
   error(message: string, meta?: object): void {
@@ -205,9 +214,10 @@ export class Logger {
   }
 } 
 
-// Helper function to create contextual logger
-export const createLogger = (requestId?: string, userId?: string): Logger => {
-  return new Logger(requestId, userId);
+// Factory — every module/file gets a named logger: createLogger('module-name')
+// At request time, attach context: createLogger('auth-service', requestId, userId)
+export const createLogger = (label: string, requestId?: string, userId?: string): Logger => {
+  return new Logger(label, requestId, userId);
 };
 
 // Helper function to extract request ID from request object
@@ -218,7 +228,7 @@ export const getRequestId = (req: any): string => {
 // Helper function to log API responses
 export const logApiResponse = (req: any, res: any, responseData?: any) => {
   const requestId = getRequestId(req);
-  const contextLogger = createLogger(requestId);
+  const contextLogger = createLogger('http', requestId);
   
   const logData: any = {
     method: req.method,
@@ -284,7 +294,7 @@ export const logQueueOperation = (operation: string, queue: string, eventId?: st
 
 // Startup logging
 export const logStartup = (port: number, environment: string) => {
-  logger.info('Auth service starting up', {
+  logger.info(`${env.SERVICE_NAME} starting up`, {
     startup: true,
     port,
     environment,
@@ -295,7 +305,7 @@ export const logStartup = (port: number, environment: string) => {
 
 // Shutdown logging
 export const logShutdown = (reason: string) => {
-  logger.info('Auth service shutting down', {
+  logger.info(`${env.SERVICE_NAME} shutting down`, {
     shutdown: true,
     reason,
     uptime: process.uptime()

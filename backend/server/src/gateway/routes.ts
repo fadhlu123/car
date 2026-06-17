@@ -2,16 +2,24 @@ import { Router } from 'express';
 
 const router = Router();
 
-// Phase 1 — Auth (email/password + Google + GitHub)
-// import { authRouter } from '../modules/auth/auth.routes';
-// router.use('/auth', authRouter);
+// Phase 1 — Auth (register, login, OAuth, sessions, password management)
+import authRouter from '../modules/auth/routes/auth.routes';
+router.use('/auth', authRouter);
+
+// Phase 2 — User account management + Admin team management
+import usersRouter from '../modules/users/routes/users.routes';
+router.use('/', usersRouter);
 
 // Phase 3 — Inventory / Products
-// import { inventoryRouter } from '../modules/inventory/inventory.routes';
-// router.use('/products', inventoryRouter);
+import inventoryRouter from '../modules/inventory/routes/inventory.routes';
+router.use('/', inventoryRouter);
 
 // Phase 4 — Orders
-// import { orderRouter } from '../modules/orders/orders.routes';
-// router.use('/orders', orderRouter);
+import ordersRouter from '../modules/orders/routes/orders.routes';
+router.use('/', ordersRouter);
+
+// Phase 5 — Notifications (in-app, SSE, email, broadcasts)
+import notificationsRouter from '../modules/notifications/routes/notifications.routes';
+router.use('/', notificationsRouter);
 
 export default router;

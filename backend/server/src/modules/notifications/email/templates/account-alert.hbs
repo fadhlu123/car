@@ -1,0 +1,26 @@
+{{> header}}
+
+{{#if (eq alertType "locked")}}
+<h2>Account temporarily locked</h2>
+{{else if (eq alertType "unlocked")}}
+<h2>Account unlocked</h2>
+{{else if (eq alertType "password")}}
+<h2>Password changed</h2>
+{{else}}
+<h2>Account notice</h2>
+{{/if}}
+
+<p>Hi {{firstName}},</p>
+<p>{{message}}</p>
+
+{{#if (eq alertType "unlocked")}}
+<div class="alert-box" style="border-color:#2196F3;background:#e3f2fd;">
+  <p>&#8987; If you did not request this, please contact support to review your account security.</p>
+</div>
+{{else}}
+<div class="alert-box">
+  <p>&#9888; If you did not initiate this action, please contact support immediately.</p>
+</div>
+{{/if}}
+
+{{> footer}}

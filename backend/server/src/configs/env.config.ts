@@ -10,6 +10,7 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1, 'MONGODB_URI is required'),
 
   JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  JWT_ADMIN_SECRET: z.string().min(32, 'JWT_ADMIN_SECRET must be at least 32 characters'),
   JWT_EXPIRES_IN: z.string().default('7d'),
 
   // Cloudinary — Phase 3
@@ -29,6 +30,12 @@ const envSchema = z.object({
   // GitHub OAuth — Phase 1
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
+
+  // Web Push / VAPID — Phase 6a
+  // Generate with: npx web-push generate-vapid-keys
+  VAPID_PUBLIC_KEY:  z.string().optional(),
+  VAPID_PRIVATE_KEY: z.string().optional(),
+  VAPID_SUBJECT:     z.string().optional(), // must be mailto: or https: URL
 
   // CORS
   CLIENT_URL: z.string().default('http://localhost:5173'),

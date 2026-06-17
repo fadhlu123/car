@@ -1,0 +1,41 @@
+{{> header}}
+
+<h2>&#128722; New order received</h2>
+<p>A new order has been placed and requires your attention.</p>
+
+<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:20px;margin:20px 0;">
+  <div class="info-row"><span>Order Ref</span><span>#{{shortId}}</span></div>
+  <div class="info-row"><span>Customer</span><span>{{customer.name}}</span></div>
+  <div class="info-row"><span>Email</span><span>{{customer.email}}</span></div>
+  <div class="info-row"><span>Phone</span><span>{{customer.phone}}</span></div>
+  <div class="info-row"><span>Items</span><span>{{itemCount}}</span></div>
+  <div class="info-row" style="border-bottom:none;"><span>Total</span><span style="color:#166534;font-size:16px;">{{currency}} {{total}}</span></div>
+</div>
+
+<h3 style="font-size:15px;color:#0f172a;margin:20px 0 10px;">Items ordered</h3>
+<table class="items">
+  <thead>
+    <tr><th>Vehicle</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Price</th></tr>
+  </thead>
+  <tbody>
+    {{#each items}}
+    <tr>
+      <td>{{this.name}}</td>
+      <td style="text-align:right;">{{this.quantity}}</td>
+      <td style="text-align:right;">{{../currency}} {{this.price}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+</table>
+
+{{#if customer.notes}}
+<div style="background:#fefce8;border-left:4px solid #fbbf24;padding:12px 16px;border-radius:0 6px 6px 0;margin:16px 0;">
+  <p style="font-size:13px;color:#92400e;margin:0;"><strong>Customer note:</strong> {{customer.notes}}</p>
+</div>
+{{/if}}
+
+<p style="text-align:center;margin-top:24px;">
+  <a class="btn" href="{{adminOrderUrl}}">View order in dashboard</a>
+</p>
+
+{{> footer}}
