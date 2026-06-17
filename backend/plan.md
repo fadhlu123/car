@@ -5,6 +5,116 @@ Each phase must be runnable and testable end-to-end before the next begins.
 
 ---
 
+## Environment Variables
+
+Create `backend/server/.env` with the values below. The server crashes on startup if any **Critical** variable is missing.
+
+### Critical — app will not start without these
+
+| Variable | How to get it | Example |
+|---|---|---|
+| `MONGODB_URI` | MongoDB Atlas → Connect → Drivers | `mongodb+srv://user:pass@cluster.mongodb.net/?retryWrites=true` |
+| `JWT_SECRET` | Any 32+ char random string | `openssl rand -hex 32` |
+| `JWT_ADMIN_SECRET` | Different 32+ char random string | `openssl rand -hex 32` |
+
+### Email delivery — required for OTP, password reset, and all auth emails
+
+Sign up at **resend.com** (free tier: 3,000 emails/month). Then:
+1. Add and verify your sending domain
+2. Create an API key
+
+| Variable | Value |
+|---|---|
+| `RESEND_API_KEY` | `re_xxxxxxxxxx` (from Resend dashboard) |
+| `EMAIL_FROM` | `Auto Majid <noreply@yourdomain.com>` |
+
+### Image upload — required for product photos
+
+Sign up at **cloudinary.com** (free tier: 25 credits/month). Get values from Dashboard → API Keys.
+
+| Variable | Value |
+|---|---|
+| `CLOUDINARY_CLOUD_NAME` | Your cloud name (e.g., `djxxxxxx`) |
+| `CLOUDINARY_API_KEY` | Numeric key from dashboard |
+| `CLOUDINARY_API_SECRET` | Secret from dashboard |
+
+### Admin setup
+
+| Variable | Value |
+|---|---|
+| `ADMIN_EMAILS` | Comma-separated emails that become owner-role admins on first admin login. E.g. `owner@yourdomain.com` |
+
+### Google OAuth — optional, enables "Sign in with Google"
+
+Go to **console.cloud.google.com** → Create project → APIs & Services → Credentials → Create OAuth 2.0 Client ID. Set authorized redirect URI to `http://localhost:5000/auth/google/callback` (and your production URL).
+
+| Variable | Value |
+|---|---|
+| `GOOGLE_CLIENT_ID` | `xxxxxxxxxx.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | `GOCSPX-xxxxxxxxxx` |
+
+### Web Push / VAPID — optional, enables background push notifications (Phase 6a)
+
+Run once in the server directory to generate your key pair:
+```
+npx web-push generate-vapid-keys
+```
+
+| Variable | Value |
+|---|---|
+| `VAPID_PUBLIC_KEY` | Public key from above command |
+| `VAPID_PRIVATE_KEY` | Private key from above command |
+| `VAPID_SUBJECT` | `mailto:support@yourdomain.com` |
+
+### App config — optional (sensible defaults shown)
+
+| Variable | Default | Notes |
+|---|---|---|
+| `PORT` | `5000` | Server port |
+| `NODE_ENV` | `development` | Set to `production` in deployment |
+| `CLIENT_URL` | `http://localhost:5173` | CORS allowed origin — set to your frontend URL in production |
+| `SERVICE_NAME` | `ecommerce-api` | Display name used in emails |
+| `LOG_LEVEL` | `debug` | Use `info` or `warn` in production |
+
+### Full `.env` template
+
+```env
+# ── Critical ─────────────────────────────────────────────────────────────────
+MONGODB_URI=mongodb+srv://USER:PASS@cluster.mongodb.net/?retryWrites=true&w=majority
+JWT_SECRET=replace_with_32plus_random_chars
+JWT_ADMIN_SECRET=replace_with_different_32plus_random_chars
+
+# ── Email (Resend) ────────────────────────────────────────────────────────────
+RESEND_API_KEY=re_xxxxxx
+EMAIL_FROM=Auto Majid <noreply@yourdomain.com>
+
+# ── Cloudinary ────────────────────────────────────────────────────────────────
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+
+# ── Admin ─────────────────────────────────────────────────────────────────────
+ADMIN_EMAILS=owner@yourdomain.com
+
+# ── Google OAuth ──────────────────────────────────────────────────────────────
+GOOGLE_CLIENT_ID=xxxxxxxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-xxxxxxxxxx
+
+# ── Web Push / VAPID ─────────────────────────────────────────────────────────
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=
+VAPID_SUBJECT=mailto:support@yourdomain.com
+
+# ── App config ────────────────────────────────────────────────────────────────
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173
+SERVICE_NAME=Auto Majid
+LOG_LEVEL=debug
+```
+
+---
+
 ## Phase 0 — Project skeleton ✅
 
 Server starts, `GET /health` returns 200, DB connects, env errors crash on startup.

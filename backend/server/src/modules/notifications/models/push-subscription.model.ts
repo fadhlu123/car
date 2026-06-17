@@ -1,5 +1,5 @@
-import { Schema, Document, Types } from 'mongoose';
-import { DatabaseManager } from '../../../configs/database.config';
+import mongoose, { Schema, Document, Types } from 'mongoose';
+import { databaseManager } from '../../../configs/database.config';
 
 const NOTIFICATIONS_DB = 'auto-majid-notifications';
 
@@ -29,14 +29,11 @@ const schema = new Schema<IPushSubscription>(
 
 schema.index({ recipient_type: 1 });
 
-let _model: Awaited<ReturnType<typeof buildModel>> | null = null;
+let _model: mongoose.Model<IPushSubscription> | null = null;
 
-const buildModel = async () => {
-  const conn = await DatabaseManager.getInstance().getConnection(NOTIFICATIONS_DB);
-  return conn.model<IPushSubscription>('PushSubscription', schema);
-};
-
-export const getPushSubscriptionModel = async () => {
-  if (!_model) _model = await buildModel();
+export const getPushSubscriptionModel = async (): Promise<mongoose.Model<IPushSubscription>> => {
+  if (_model) return _model;
+  const conn = await databaseManager.getConnection(NOTIFICATIONS_DB);
+  _model = conn.model<IPushSubscription>('PushSubscription', schema);
   return _model;
 };

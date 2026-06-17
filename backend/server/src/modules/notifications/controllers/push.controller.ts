@@ -16,7 +16,7 @@ export const getVapidKey = (req: Request, res: Response): void => {
   res.json({ success: true, message: 'VAPID public key', data: { public_key: key } });
 };
 
-// ── Shared subscribe schema ────────────────────────────────────────────────────
+// ── Shared schemas ────────────────────────────────────────────────────────────
 
 const subscribeSchema = z.object({
   endpoint: z.string().url('endpoint must be a valid URL'),
@@ -31,10 +31,10 @@ const unsubscribeSchema = z.object({ endpoint: z.string().url() });
 // ── POST /notifications/push/subscribe (users) ────────────────────────────────
 
 export const subscribePush = [
-  ...validate(subscribeSchema),
+  validate(subscribeSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const userId    = (req as any).user.id as string;
+      const userId             = (req as any).user.id as string;
       const { endpoint, keys } = req.body as z.infer<typeof subscribeSchema>;
       await saveSubscription(userId, 'user', endpoint, keys, req.headers['user-agent']);
       res.status(201).json({ success: true, message: 'Push subscription saved', data: null });
@@ -45,7 +45,7 @@ export const subscribePush = [
 // ── DELETE /notifications/push/unsubscribe (users) ────────────────────────────
 
 export const unsubscribePush = [
-  ...validate(unsubscribeSchema),
+  validate(unsubscribeSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const userId       = (req as any).user.id as string;
@@ -59,10 +59,10 @@ export const unsubscribePush = [
 // ── POST /admin/notifications/push/subscribe ──────────────────────────────────
 
 export const adminSubscribePush = [
-  ...validate(subscribeSchema),
+  validate(subscribeSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const adminId   = (req as any).admin.id as string;
+      const adminId            = (req as any).admin.id as string;
       const { endpoint, keys } = req.body as z.infer<typeof subscribeSchema>;
       await saveSubscription(adminId, 'admin', endpoint, keys, req.headers['user-agent']);
       res.status(201).json({ success: true, message: 'Admin push subscription saved', data: null });
@@ -73,7 +73,7 @@ export const adminSubscribePush = [
 // ── DELETE /admin/notifications/push/unsubscribe ──────────────────────────────
 
 export const adminUnsubscribePush = [
-  ...validate(unsubscribeSchema),
+  validate(unsubscribeSchema),
   async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const adminId      = (req as any).admin.id as string;
