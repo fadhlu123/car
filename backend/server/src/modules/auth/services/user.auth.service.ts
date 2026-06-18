@@ -100,7 +100,7 @@ export const register = async (
     logger.error('Verification email failed on register', { error: err?.message });
   }
 
-  await logEvent({ userId: user._id.toString(), email: normalised, event: 'register', success: true, ...ctx });
+  await logEvent({ userId: user._id.toString(), email: normalised, event: 'register', success: true, ...ctx, persist: false });
   logger.info('User registered', { userId: user._id });
 
   const { accessToken, refreshToken } = await createUserSession(user._id.toString(), user.email, ctx);
@@ -118,7 +118,7 @@ export const login = async (
   const user = await User.findOne({ email: email.toLowerCase().trim() });
 
   if (!user || !user.password_hash) {
-    await logEvent({ email, event: 'login_failed', success: false, ...ctx, metadata: { reason: 'user_not_found' } });
+    await logEvent({ email, event: 'login_failed', success: false, ...ctx, metadata: { reason: 'user_not_found' }, persist: true });
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
   }
 
@@ -129,16 +129,17 @@ export const login = async (
   const valid = await comparePassword(password, user.password_hash);
   if (!valid) {
     await handleFailedLogin(user);
-    await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_failed', success: false, ...ctx, metadata: { reason: 'bad_password' } });
+    await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_failed', success: false, ...ctx, metadata: { reason: 'bad_password' }, persist: true });
     if ((user.failed_login_attempts + 1) >= LOCKOUT_THRESHOLD) {
-      await logEvent({ userId: user._id.toString(), email: user.email, event: 'account_locked', success: false, ...ctx });
+      await logEvent({ userId: user._id.toString(), email: user.email, event: 'account_locked', success: false, ...ctx, persist: true });
     }
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
   }
 
   // Successful login — reset lockout
   await User.findByIdAndUpdate(user._id, { failed_login_attempts: 0, locked_until: null, last_login: new Date() });
-  await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_success', success: true, ...ctx });
+  await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_success', success: true, ...ctx, persist: false });
+  logger.info('User logged in', { userId: user._id });
 
   const { accessToken, refreshToken } = await createUserSession(user._id.toString(), user.email, ctx);
   return { access_token: accessToken, refresh_token: refreshToken, user: toSummary(user) };
@@ -148,12 +149,12 @@ export const login = async (
 
 export const logout = async (sessionId: string, userId: string, ctx: Ctx): Promise<void> => {
   await revokeSession(sessionId, userId, false);
-  await logEvent({ userId, event: 'logout', success: true, ...ctx });
+  logger.info('User logged out', { userId });
 };
 
 export const logoutAll = async (userId: string, ctx: Ctx): Promise<void> => {
   await revokeAllUserSessions(userId);
-  await logEvent({ userId, event: 'logout_all', success: true, ...ctx });
+  logger.info('User logged out all sessions', { userId });
 };
 
 // ── Refresh ───────────────────────────────────────────────────────────────────
@@ -208,7 +209,7 @@ const handleOAuthProfile = async (profile: OAuthProfile, ctx: Ctx): Promise<Auth
     if (!linked) {
       user.providers.push({ provider: profile.provider, provider_id: profile.provider_id });
       await user.save();
-      await logEvent({ userId: user._id.toString(), email: user.email, event: 'google_linked', success: true, ...ctx });
+      logger.info('Google provider linked to existing account', { userId: user._id });
     }
   } else {
     user = await User.create({
@@ -219,12 +220,11 @@ const handleOAuthProfile = async (profile: OAuthProfile, ctx: Ctx): Promise<Auth
       email_verified: true,  // Google verifies email ownership
     });
     logger.info('OAuth user created', { userId: user._id, provider: profile.provider });
-    await logEvent({ userId: user._id.toString(), email: user.email, event: 'register', success: true, ...ctx });
   }
 
   if (!user.is_active) throw new AppError(ERRORS.ACCOUNT_INACTIVE, 403);
   await User.findByIdAndUpdate(user._id, { last_login: new Date() });
-  await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_success', success: true, ...ctx });
+  logger.info('OAuth login success', { userId: user._id, provider: profile.provider });
 
   const { accessToken, refreshToken } = await createUserSession(user._id.toString(), user.email, ctx);
   return { access_token: accessToken, refresh_token: refreshToken, user: toSummary(user) };
@@ -259,7 +259,7 @@ export const linkGoogle = async (userId: string, idToken: string, ctx: Ctx): Pro
   if (!user.profile.avatar_url && profile.avatar_url) user.profile.avatar_url = profile.avatar_url;
   await user.save();
 
-  await logEvent({ userId, email: user.email, event: 'google_linked', success: true, ...ctx });
+  logger.info('Google account linked', { userId });
 };
 
 // ── Password management (delegated to auth.password.service) ─────────────────

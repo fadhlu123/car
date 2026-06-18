@@ -34,6 +34,12 @@ const buildSession = async ({ userId, email, device, isAdmin, adminRole }: Build
   const Session   = await getSessionModel();
   const expiresAt = new Date(Date.now() + (isAdmin ? ADMIN_REFRESH_MS : USER_REFRESH_MS));
 
+  // Single-session enforcement: revoke every prior active session for this user type
+  await Session.updateMany(
+    { user_id: userId, is_admin: isAdmin, revoked_at: null },
+    { revoked_at: new Date() }
+  );
+
   // Insert session first to obtain the _id — that id becomes part of the JWT,
   // which is then hashed and stored back. Two-step but avoids a separate UUID.
   const session = await Session.create({
@@ -81,21 +87,23 @@ const rotateSession = async (
     throw new AppError(ERRORS.INVALID_REFRESH, 401);
   }
 
-  // Reuse of a revoked token is a signal of token theft → nuke all sessions
-  if (session.revoked_at) {
-    logger.warn('Refresh token reuse detected', { userId: payload.sub, isAdmin });
+  if (session.expires_at < new Date()) throw new AppError(ERRORS.SESSION_EXPIRED, 401);
+  if (session.token_hash !== hashToken(rawToken)) throw new AppError(ERRORS.INVALID_REFRESH, 401);
+
+  // Atomically revoke the old session — if it was already revoked (concurrent request
+  // or replayed token), treat it as theft and nuke every active session for this user.
+  const claimed = await Session.findOneAndUpdate(
+    { _id: payload.sessionId, revoked_at: null },
+    { revoked_at: new Date() }
+  );
+  if (!claimed) {
+    logger.warn('Refresh token reuse detected — revoking all sessions', { userId: payload.sub, isAdmin });
     await Session.updateMany(
       { user_id: session.user_id, is_admin: isAdmin, revoked_at: null },
       { revoked_at: new Date() }
     );
     throw new AppError(ERRORS.REUSE_DETECTED, 401);
   }
-
-  if (session.expires_at < new Date()) throw new AppError(ERRORS.SESSION_EXPIRED, 401);
-  if (session.token_hash !== hashToken(rawToken)) throw new AppError(ERRORS.INVALID_REFRESH, 401);
-
-  // Revoke old session before creating the new one (rotation)
-  await Session.findByIdAndUpdate(payload.sessionId, { revoked_at: new Date() });
 
   // Fetch current user data so the new access token reflects any role changes
   const User = await getUserModel();

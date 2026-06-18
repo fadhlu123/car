@@ -8,7 +8,6 @@ export interface IOtp extends Document {
   type: OtpType;
   code_hash: string;   // SHA-256 of the 6-digit code
   expires_at: Date;
-  used_at?: Date;
   attempts: number;    // failed verification attempts
   created_at: Date;
 }
@@ -19,7 +18,6 @@ const OtpSchema = new Schema<IOtp>(
     type:       { type: String, enum: ['email_verification', 'password_reset'], required: true },
     code_hash:  { type: String, required: true },
     expires_at: { type: Date, required: true, index: { expireAfterSeconds: 0 } },
-    used_at:    { type: Date },
     attempts:   { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
   },

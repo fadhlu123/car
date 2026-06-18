@@ -25,11 +25,35 @@ export interface EmailPayload {
   html:    string;
 }
 
+// Strips HTML tags so the OTP / body is readable in the terminal
+const stripHtml = (html: string) =>
+  html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+
+const devPrint = (payload: EmailPayload): void => {
+  if (!env.isDevelopment) return;
+  const border = '─'.repeat(60);
+  console.log(`\n┌${border}┐`);
+  console.log(`│  [DEV EMAIL]`);
+  console.log(`│  To      : ${payload.to}`);
+  console.log(`│  Subject : ${payload.subject}`);
+  console.log(`│  Body    :`);
+  stripHtml(payload.html)
+    .split('\n')
+    .filter(Boolean)
+    .forEach(line => console.log(`│    ${line}`));
+  console.log(`└${border}┘\n`);
+};
+
 export const sendEmail = async (payload: EmailPayload): Promise<void> => {
   const transport = getTransport();
 
   if (!transport) {
     logger.warn(`[EMAIL SKIP] RESEND_API_KEY not set — skipped "${payload.subject}" to ${payload.to}`);
+    devPrint(payload);
     return;
   }
 
@@ -41,8 +65,10 @@ export const sendEmail = async (payload: EmailPayload): Promise<void> => {
       html:    payload.html,
     });
     logger.info(`Email sent → ${payload.to} | ${payload.subject}`);
+    devPrint(payload);
   } catch (err: any) {
     // Log but never throw — email failures must not surface to the caller
     logger.error(`Email delivery failed → ${payload.to} | ${err.message}`);
+    devPrint(payload);
   }
 };

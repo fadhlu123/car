@@ -414,7 +414,7 @@ Already bootstrapped at `frontend/client/`.
 ---
 
 ## Future / out of scope for this gig
-
+- Gateway middlewares (Security, cors, infact all the middleware, rateliiting a public one before the authrate limiter, it covers the other sub modules without a middleware..apparently the auth only middlewrae is role checking)
 - Payment integration
 - Customer order history per login
 - Reviews, wishlists, multi-vendor

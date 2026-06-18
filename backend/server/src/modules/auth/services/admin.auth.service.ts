@@ -59,13 +59,13 @@ export const adminLogin = async (email: string, password: string, ctx: Ctx): Pro
 
   // Reject if neither an owner email nor an existing admin account
   if (!user || (!isOwnerEmail && user.role !== 'admin')) {
-    await logEvent({ email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { reason: 'not_authorised' } });
+    await logEvent({ email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { reason: 'not_authorised' }, persist: true });
     // Use the same message as wrong password — don't leak which check failed
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
   }
 
   if (!user.password_hash) {
-    await logEvent({ email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { reason: 'no_password' } });
+    await logEvent({ email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { reason: 'no_password' }, persist: true });
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
   }
 
@@ -80,9 +80,9 @@ export const adminLogin = async (email: string, password: string, ctx: Ctx): Pro
       failed_login_attempts: attempts,
       ...(isLocked ? { locked_until: new Date(Date.now() + LOCKOUT_DURATION_MS) } : {}),
     });
-    await logEvent({ userId: user._id.toString(), email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { attempts } });
+    await logEvent({ userId: user._id.toString(), email: normalised, event: 'admin_login_failed', success: false, ...ctx, metadata: { attempts }, persist: true });
     if (isLocked) {
-      await logEvent({ userId: user._id.toString(), email: normalised, event: 'account_locked', success: false, ...ctx });
+      await logEvent({ userId: user._id.toString(), email: normalised, event: 'account_locked', success: false, ...ctx, persist: true });
       logger.warn('Admin account locked', { userId: user._id });
     }
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
@@ -96,7 +96,7 @@ export const adminLogin = async (email: string, password: string, ctx: Ctx): Pro
   }
 
   await User.findByIdAndUpdate(user._id, { failed_login_attempts: 0, locked_until: null, last_login: new Date() });
-  await logEvent({ userId: user._id.toString(), email: normalised, event: 'admin_login_success', success: true, ...ctx });
+  logger.info('Admin logged in', { userId: user._id, adminRole });
 
   const { accessToken, refreshToken } = await createAdminSession(user._id.toString(), user.email, ctx, adminRole);
   return {
@@ -110,7 +110,7 @@ export const adminLogin = async (email: string, password: string, ctx: Ctx): Pro
 
 export const adminLogout = async (sessionId: string, adminId: string, ctx: Ctx): Promise<void> => {
   await revokeSession(sessionId, adminId, true);
-  await logEvent({ userId: adminId, event: 'logout', success: true, ...ctx });
+  logger.info('Admin logged out', { userId: adminId });
 };
 
 // ── Refresh ───────────────────────────────────────────────────────────────────

@@ -12,9 +12,28 @@ export interface AuditInput {
   ip_address: string;
   user_agent: string;
   metadata?: Record<string, unknown>;
+  /** Persist to DB. Only set true for critical security events (failed logins, lockouts, password changes). */
+  persist?: boolean;
 }
 
 export const logEvent = async (input: AuditInput): Promise<void> => {
+  // Always surface to Winston — visible in terminal regardless of DB write
+  const logMeta = {
+    ...(input.userId     && { userId:   input.userId }),
+    ...(input.email      && { email:    input.email }),
+    ...(input.ip_address && { ip:       input.ip_address }),
+    ...(input.metadata   && { metadata: input.metadata }),
+    success: input.success,
+  };
+
+  if (input.success) {
+    logger.info(`audit:${input.event}`, logMeta);
+  } else {
+    logger.warn(`audit:${input.event}`, logMeta);
+  }
+
+  if (!input.persist) return;
+
   try {
     const Audit = await getAuditModel();
     await Audit.create({
@@ -27,8 +46,7 @@ export const logEvent = async (input: AuditInput): Promise<void> => {
       metadata:   input.metadata,
     });
   } catch (err) {
-    // Audit log failure must never break the caller
-    logger.warn('Failed to write audit log', { event: input.event, err });
+    logger.warn('Failed to write audit log to DB', { event: input.event, err });
   }
 };
 

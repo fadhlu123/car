@@ -22,7 +22,7 @@ export const generateAndStoreOtp = async (userId: string, type: OtpType): Promis
   const Otp = await getOtpModel();
 
   // Invalidate any existing unused OTPs of the same type
-  await Otp.deleteMany({ user_id: userId, type, used_at: null });
+  await Otp.deleteMany({ user_id: userId, type });
 
   const code = generateCode();
   await Otp.create({
@@ -37,7 +37,7 @@ export const generateAndStoreOtp = async (userId: string, type: OtpType): Promis
 
 export const verifyOtp = async (userId: string, type: OtpType, code: string): Promise<void> => {
   const Otp = await getOtpModel();
-  const otp = await Otp.findOne({ user_id: userId, type, used_at: null });
+  const otp = await Otp.findOne({ user_id: userId, type });
 
   if (!otp || otp.expires_at < new Date()) {
     throw new AppError(ERRORS.INVALID_OR_EXPIRED, 400);
@@ -53,7 +53,7 @@ export const verifyOtp = async (userId: string, type: OtpType, code: string): Pr
     throw new AppError(ERRORS.INVALID_OR_EXPIRED, 400);
   }
 
-  await Otp.findByIdAndUpdate(otp._id, { used_at: new Date() });
+  await Otp.findByIdAndDelete(otp._id);
 };
 
 export const invalidateOtps = async (userId: string, type: OtpType): Promise<void> => {

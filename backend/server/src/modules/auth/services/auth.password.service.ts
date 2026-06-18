@@ -21,7 +21,7 @@ type RequestContext = DeviceContext;
 
 export const requestPasswordReset = async (
   email: string,
-  ctx: RequestContext
+  _ctx: RequestContext
 ): Promise<void> => {
   const User  = await getUserModel();
   const user  = await User.findOne({ email: email.toLowerCase().trim() });
@@ -35,10 +35,7 @@ export const requestPasswordReset = async (
   const otp = await generateAndStoreOtp(user._id.toString(), 'password_reset');
   await sendPasswordResetEmail(user.email, otp, user.profile.first_name);
 
-  await logEvent({
-    userId: user._id.toString(), email: user.email,
-    event: 'password_reset_requested', success: true, ...ctx,
-  });
+  logger.info('Password reset requested', { userId: user._id });
 };
 
 export const resetPassword = async (
@@ -62,7 +59,7 @@ export const resetPassword = async (
 
   await logEvent({
     userId: user._id.toString(), email: user.email,
-    event: 'password_reset_completed', success: true, ...ctx,
+    event: 'password_reset_completed', success: true, ...ctx, persist: true,
   });
 
   logger.info('Password reset completed', { userId: user._id });
@@ -99,7 +96,7 @@ export const changePassword = async (
 
   await logEvent({
     userId, email,
-    event: 'password_changed', success: true, ...ctx,
+    event: 'password_changed', success: true, ...ctx, persist: true,
   });
 
   logger.info('Password changed', { userId });
