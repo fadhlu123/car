@@ -11,7 +11,7 @@ apiClient.interceptors.request.use((config) => {
 });
 
 let isRefreshing = false;
-let failedQueue  = [];
+let failedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((p) => (error ? p.reject(error) : p.resolve(token)));
@@ -30,18 +30,18 @@ apiClient.interceptors.response.use(
     }
 
     original._retry = true;
-    isRefreshing    = true;
+    isRefreshing = true;
     const refreshToken = getRefreshToken();
 
     if (!refreshToken) {
       isRefreshing = false;
       clearAuth();
-      window.dispatchEvent(new Event('auth:logout'));
+      window.dispatchEvent(new Event('admin:logout'));
       return Promise.reject(error);
     }
 
     try {
-      const { data } = await axios.post(`${ENV.API_BASE_URL}/auth/refresh`, { refresh_token: refreshToken });
+      const { data } = await axios.post(`${ENV.API_BASE_URL}/auth/admin/refresh`, { refresh_token: refreshToken });
       const { access_token, refresh_token } = data.data;
       updateTokens(access_token, refresh_token);
       processQueue(null, access_token);
@@ -50,7 +50,7 @@ apiClient.interceptors.response.use(
     } catch (refreshError) {
       processQueue(refreshError, null);
       clearAuth();
-      window.dispatchEvent(new Event('auth:logout'));
+      window.dispatchEvent(new Event('admin:logout'));
       return Promise.reject(refreshError);
     } finally {
       isRefreshing = false;

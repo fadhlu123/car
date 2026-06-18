@@ -28,7 +28,7 @@ export const CartProvider = ({ children }) => {
           item.productId === product._id ? { ...item, quantity: item.quantity + 1 } : item
         );
       }
-      return [...prevItems, { productId: product._id, name: product.name, price: product.price, quantity: 1, image: product.images?.[0] }];
+      return [...prevItems, { productId: product._id, name: product.name, price: product.price, currency: product.currency, quantity: 1, image: product.images?.[0]?.url }];
     });
   };
 

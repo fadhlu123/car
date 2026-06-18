@@ -7,9 +7,9 @@ const CarCard = ({ vehicle }) => {
   return (
     <div className="card p-4 group bg-primary-900 border border-primary-800 hover:border-accent transition-colors shadow-lg">
       <div className="relative aspect-[16/10] overflow-hidden rounded-lg mb-4 bg-primary-950">
-        <img 
-          src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'} 
-          alt={`${vehicle.brand} ${vehicle.model}`} 
+        <img
+          src={vehicle.images?.[0]?.url || 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+          alt={`${vehicle.make} ${vehicle.model}`}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
         <div className="absolute top-3 left-3 bg-primary-950/80 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm border border-primary-800">
@@ -21,7 +21,7 @@ const CarCard = ({ vehicle }) => {
       </div>
       
       <div className="flex-grow flex flex-col">
-        <h3 className="font-bold text-xl text-white mb-1">{vehicle.brand} {vehicle.model}</h3>
+        <h3 className="font-bold text-xl text-white mb-1">{vehicle.make} {vehicle.model}</h3>
         <p className="text-sm text-primary-400 mb-4">{vehicle.year}</p>
 
         <div className="flex items-center justify-between text-xs text-primary-300 mb-6 bg-primary-950/50 p-3 rounded-lg border border-primary-800/50">

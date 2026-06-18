@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Car } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
 
@@ -11,20 +11,14 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const data = await login(email, password);
-      if (!data.user?.email_verified) {
-        navigate('/verify-email');
-      } else {
-        navigate(from, { replace: true });
-      }
+      await login(email, password);
+      navigate('/');
     } catch (err) {
       setError(extractErrorMessage(err));
     } finally {
@@ -33,12 +27,14 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-[90vh] flex items-center justify-center py-12 px-4">
-      <div className="max-w-md w-full space-y-6 card p-8">
+    <div className="min-h-screen flex items-center justify-center bg-primary-950 px-4">
+      <div className="max-w-md w-full card p-8 space-y-6">
         <div className="text-center">
-          <Car className="h-10 w-10 text-accent mx-auto mb-2" />
-          <h2 className="text-3xl font-extrabold text-white">Sign in</h2>
-          <p className="mt-1 text-primary-400 text-sm">Welcome back to Auto Majid</p>
+          <div className="w-14 h-14 bg-primary-800 rounded-full flex items-center justify-center mx-auto mb-3">
+            <ShieldCheck className="h-7 w-7 text-accent" />
+          </div>
+          <h2 className="text-2xl font-extrabold text-white">Admin Portal</h2>
+          <p className="text-primary-400 text-sm mt-1">Auto Majid Management</p>
         </div>
 
         {error && (
@@ -47,9 +43,9 @@ const Login = () => {
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-primary-300 mb-1">Email address</label>
+            <label className="block text-sm font-medium text-primary-300 mb-1">Email</label>
             <input
               type="email"
               required
@@ -68,18 +64,10 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="text-right">
-            <Link to="/forgot-password" className="text-xs text-accent hover:underline">Forgot password?</Link>
-          </div>
           <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-
-        <p className="text-center text-sm text-primary-400">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="text-accent hover:underline font-medium">Create one</Link>
-        </p>
       </div>
     </div>
   );

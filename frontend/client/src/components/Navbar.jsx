@@ -27,12 +27,21 @@ const Navbar = () => {
             <Link to="/contact" className="text-primary-200 hover:text-white font-medium transition-colors">Contact</Link>
             
             {user ? (
+              <div className="flex items-center space-x-4">
+                <Link to="/cart" className="relative p-2 text-white hover:text-accent transition-colors">
+                  <ShoppingCart className="h-6 w-6" />
+                  {cartItems.length > 0 && (
+                    <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-primary-950 bg-accent rounded-full transform translate-x-1/4 -translate-y-1/4">
+                      {cartItems.reduce((acc, item) => acc + item.quantity, 0)}
+                    </span>
+                  )}
+                </Link>
               <div className="relative group">
                 <button className="flex items-center space-x-2 text-white font-medium hover:text-accent transition-colors">
                   <div className="w-8 h-8 rounded-full bg-primary-800 flex items-center justify-center border border-primary-700">
                     <UserIcon className="h-4 w-4 text-accent" />
                   </div>
-                  <span>{user.name}</span>
+                  <span>{user.first_name} {user.last_name}</span>
                 </button>
                 <div className="absolute right-0 mt-2 w-48 bg-primary-900 border border-primary-800 shadow-xl rounded-xl py-2 opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all">
                   {user.role === 'admin' && (
@@ -42,6 +51,7 @@ const Navbar = () => {
                   <Link to="/my-bookings" className="block px-4 py-2 text-sm text-primary-200 hover:bg-primary-800 hover:text-white">My Bookings</Link>
                   <button onClick={logout} className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-primary-800 hover:text-red-300">Logout</button>
                 </div>
+              </div>
               </div>
             ) : (
               <div className="flex space-x-4 items-center">
