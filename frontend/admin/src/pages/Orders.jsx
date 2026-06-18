@@ -4,20 +4,31 @@ import { getOrders, updateOrderStatus } from '../services/orders.service';
 import { formatCurrency, formatDate } from '../utils/format.utils';
 import { extractErrorMessage } from '../utils/error.utils';
 
-const STATUSES = ['pending', 'confirmed', 'completed', 'cancelled'];
+// Valid statuses and allowed transitions from backend:
+// pending → contacted | cancelled
+// contacted → completed | cancelled
+const STATUSES = ['pending', 'contacted', 'completed', 'cancelled'];
 
 const STATUS_COLORS = {
   pending:   'bg-yellow-900/40 text-yellow-300 border-yellow-800',
-  confirmed: 'bg-blue-900/40 text-blue-300 border-blue-800',
+  contacted: 'bg-blue-900/40 text-blue-300 border-blue-800',
   completed: 'bg-green-900/40 text-green-300 border-green-800',
   cancelled: 'bg-red-900/40 text-red-300 border-red-800',
 };
 
+// Only show valid next statuses for each current status
+const NEXT_STATUSES = {
+  pending:   ['pending', 'contacted', 'cancelled'],
+  contacted: ['contacted', 'completed', 'cancelled'],
+  completed: ['completed'],
+  cancelled: ['cancelled'],
+};
+
 const Orders = () => {
-  const [orders, setOrders]   = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [orders, setOrders]     = useState([]);
+  const [loading, setLoading]   = useState(true);
   const [updating, setUpdating] = useState(null);
-  const [error, setError]     = useState('');
+  const [error, setError]       = useState('');
 
   const load = () => {
     setLoading(true);
@@ -62,14 +73,18 @@ const Orders = () => {
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" />
         </div>
       ) : orders.length === 0 ? (
-        <p className="text-primary-400 text-sm">No orders found.</p>
+        <div className="card p-12 text-center text-primary-400">
+          <p className="text-lg">No orders yet.</p>
+          <p className="text-sm mt-1">When customers place orders they will appear here.</p>
+        </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-primary-800 text-primary-400 text-left">
-                <th className="pb-3 font-medium pr-4">Order</th>
+                <th className="pb-3 font-medium pr-4">Order ID</th>
                 <th className="pb-3 font-medium pr-4">Customer</th>
+                <th className="pb-3 font-medium pr-4">Items</th>
                 <th className="pb-3 font-medium pr-4">Date</th>
                 <th className="pb-3 font-medium pr-4">Amount</th>
                 <th className="pb-3 font-medium pr-4">Status</th>
@@ -83,8 +98,14 @@ const Orders = () => {
                   <td className="py-4 pr-4">
                     <p className="font-medium">{order.customer?.name || '—'}</p>
                     <p className="text-xs text-primary-500">{order.customer?.phone}</p>
+                    <p className="text-xs text-primary-500">{order.customer?.email}</p>
                   </td>
-                  <td className="py-4 pr-4 text-primary-300">{formatDate(order.created_at)}</td>
+                  <td className="py-4 pr-4 text-primary-300 text-xs">
+                    {order.items?.map((item) => (
+                      <div key={item.product_id}>{item.name} ×{item.quantity}</div>
+                    ))}
+                  </td>
+                  <td className="py-4 pr-4 text-primary-300 text-xs">{formatDate(order.created_at)}</td>
                   <td className="py-4 pr-4 text-accent font-semibold">{formatCurrency(order.total_amount || 0, order.currency)}</td>
                   <td className="py-4 pr-4">
                     <span className={`px-2 py-1 rounded-full text-xs border capitalize ${STATUS_COLORS[order.status] || 'bg-primary-800 text-primary-300 border-primary-700'}`}>
@@ -92,14 +113,20 @@ const Orders = () => {
                     </span>
                   </td>
                   <td className="py-4">
-                    <select
-                      value={order.status}
-                      disabled={updating === order._id}
-                      onChange={(e) => handleStatus(order._id, e.target.value)}
-                      className="bg-primary-800 border border-primary-700 text-white text-xs rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
-                    >
-                      {STATUSES.map((s) => <option key={s} value={s} className="capitalize">{s}</option>)}
-                    </select>
+                    {['completed', 'cancelled'].includes(order.status) ? (
+                      <span className="text-xs text-primary-600">—</span>
+                    ) : (
+                      <select
+                        value={order.status}
+                        disabled={updating === order._id}
+                        onChange={(e) => handleStatus(order._id, e.target.value)}
+                        className="bg-primary-800 border border-primary-700 text-white text-xs rounded-lg px-2 py-1.5 outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
+                      >
+                        {(NEXT_STATUSES[order.status] || STATUSES).map((s) => (
+                          <option key={s} value={s} className="capitalize">{s}</option>
+                        ))}
+                      </select>
+                    )}
                   </td>
                 </tr>
               ))}

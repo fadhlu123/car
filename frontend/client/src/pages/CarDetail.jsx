@@ -23,7 +23,8 @@ const CarDetail = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const inCart = vehicle && cartItems.some((i) => i.productId === vehicle._id);
+  // API returns `id`, not `_id`
+  const inCart = vehicle && cartItems.some((i) => i.productId === vehicle.id);
   const images = vehicle?.images || [];
 
   const handleAddToCart = () => {
@@ -44,8 +45,8 @@ const CarDetail = () => {
   if (error || !vehicle) {
     return (
       <div className="max-w-2xl mx-auto text-center py-20 text-primary-400">
-        <p>{error || 'Vehicle not found.'}</p>
-        <button onClick={() => navigate('/listings')} className="btn-outline mt-4">Back to Listings</button>
+        <p className="text-red-400 mb-4">{error || 'Vehicle not found.'}</p>
+        <button onClick={() => navigate('/listings')} className="btn-outline">Back to Listings</button>
       </div>
     );
   }
@@ -61,7 +62,7 @@ const CarDetail = () => {
         <div>
           <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-primary-900 mb-4">
             <img
-              src={images[imgIdx]?.url || 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
+              src={images[imgIdx]?.url || vehicle.thumbnail || 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
               alt={`${vehicle.make} ${vehicle.model}`}
               className="w-full h-full object-cover"
             />
@@ -81,15 +82,15 @@ const CarDetail = () => {
                 </button>
               </>
             )}
-            <div className="absolute top-3 left-3 bg-primary-950/80 px-3 py-1 rounded-full text-xs font-bold text-white">
+            <div className="absolute top-3 left-3 bg-primary-950/80 px-3 py-1 rounded-full text-xs font-bold text-white capitalize">
               {vehicle.condition}
             </div>
           </div>
           {images.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="flex gap-2 overflow-x-auto pb-1">
               {images.map((img, i) => (
                 <button
-                  key={img._id || i}
+                  key={img.id || i}
                   onClick={() => setImgIdx(i)}
                   className={`flex-shrink-0 w-20 h-16 rounded-lg overflow-hidden border-2 transition-colors ${i === imgIdx ? 'border-accent' : 'border-primary-800'}`}
                 >
@@ -123,13 +124,17 @@ const CarDetail = () => {
             </div>
             <div className="bg-primary-900 rounded-xl p-3 flex items-center gap-3 border border-primary-800">
               <Settings className="h-5 w-5 text-primary-400 flex-shrink-0" />
-              <div><p className="text-xs text-primary-500">Transmission</p><p className="text-sm font-medium text-white capitalize">{vehicle.transmission || '—'}</p></div>
+              <div><p className="text-xs text-primary-500">Condition</p><p className="text-sm font-medium text-white capitalize">{vehicle.condition}</p></div>
             </div>
             <div className="bg-primary-900 rounded-xl p-3 flex items-center gap-3 border border-primary-800">
               <Palette className="h-5 w-5 text-primary-400 flex-shrink-0" />
               <div><p className="text-xs text-primary-500">Colour</p><p className="text-sm font-medium text-white capitalize">{vehicle.colour || '—'}</p></div>
             </div>
           </div>
+
+          {vehicle.description && (
+            <p className="text-primary-300 text-sm mb-6 leading-relaxed">{vehicle.description}</p>
+          )}
 
           {vehicle.features?.length > 0 && (
             <div className="mb-6">
@@ -151,11 +156,17 @@ const CarDetail = () => {
                 disabled={inCart || added}
                 className="btn-primary w-full flex items-center justify-center gap-2 disabled:opacity-70"
               >
-                {added ? <><Check className="h-5 w-5" /> Added to Cart</> : inCart ? 'Already in Cart' : <><ShoppingCart className="h-5 w-5" /> Add to Cart</>}
+                {added ? (
+                  <><Check className="h-5 w-5" /> Added to Cart</>
+                ) : inCart ? (
+                  'Already in Cart'
+                ) : (
+                  <><ShoppingCart className="h-5 w-5" /> Add to Cart</>
+                )}
               </button>
             ) : (
-              <div className="bg-primary-800/40 border border-primary-700 rounded-xl px-4 py-3 text-center text-primary-400 text-sm">
-                Currently unavailable
+              <div className="bg-primary-800/40 border border-primary-700 rounded-xl px-4 py-3 text-center text-primary-400 text-sm capitalize">
+                {vehicle.availability === 'sold' ? 'This vehicle has been sold' : 'Currently unavailable'}
               </div>
             )}
             <button onClick={() => navigate('/cart')} className="btn-outline w-full">View Cart</button>

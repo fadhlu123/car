@@ -172,6 +172,33 @@ class DatabaseManager {
     return conn;
   }
 
+  // Open all known module DB connections at startup so no request ever
+  // pays the cold-connect penalty.
+  public async warmUp(dbNames: string[]): Promise<void> {
+    await Promise.all(dbNames.map((name) => this.getConnection(name)));
+    logger.info('All module databases warmed up', { databases: dbNames });
+    this.startHeartbeat(dbNames);
+  }
+
+  // Ping all named connections every 20 seconds to prevent Atlas M0 idle timeout
+  // (Atlas M0 drops connections idle for >30s).
+  private startHeartbeat(dbNames: string[]): void {
+    setInterval(async () => {
+      for (const name of dbNames) {
+        const conn = this.namedConnections.get(name);
+        if (conn && conn.readyState === 1 && conn.db) {
+          try {
+            await conn.db.admin().ping();
+          } catch {
+            // Connection dropped — remove so next getConnection() re-creates it
+            this.namedConnections.delete(name);
+            logger.warn(`Heartbeat lost for ${name}, will reconnect on next request`);
+          }
+        }
+      }
+    }, 20_000);
+  }
+
   // Replaces the database name segment in the Atlas URI.
   // e.g. .../car_dealership -> .../auto-majid-users
   private buildUri(dbName: string): string {

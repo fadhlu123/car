@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight } from 'lucide-react';
+import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const NAV = [
   { to: '/',         label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/orders',   label: 'Orders',    icon: ShoppingBag },
   { to: '/products', label: 'Products',  icon: Car },
+  { to: '/team',     label: 'Team',      icon: Users },
 ];
 
 const SideNav = ({ onNav, admin, onLogout }) => (

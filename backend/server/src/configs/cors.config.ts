@@ -4,6 +4,11 @@ import { createLogger } from '../utils/logger.utils';
 
 const logger = createLogger('cors');
 
+const ALLOWED_ORIGINS = env.CLIENT_URL
+  .split(',')
+  .map((u) => u.trim())
+  .filter(Boolean);
+
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     // Requests with no origin header (Postman, mobile apps, server-to-server)
@@ -12,7 +17,7 @@ export const corsOptions: CorsOptions = {
       return env.isDevelopment ? callback(null, true) : callback(null, false);
     }
 
-    if (origin === env.CLIENT_URL) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
 
     logger.warn('CORS blocked request from unknown origin', { origin });
     callback(new Error('Not allowed by CORS'));

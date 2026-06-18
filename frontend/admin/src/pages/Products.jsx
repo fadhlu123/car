@@ -7,15 +7,14 @@ import { extractErrorMessage } from '../utils/error.utils';
 const EMPTY_FORM = {
   name: '', make: '', model: '', year: '', price: '', currency: 'GHS',
   condition: 'used', category: 'sedan', availability: 'available',
-  mileage: '', colour: '', transmission: '', fuel_type: '',
-  description: '', features: '',
+  mileage: '', colour: '', description: '', features: '',
 };
 
 const Products = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing]   = useState(null);
+  const [editing, setEditing]   = useState(null); // stores product `id` (not `_id`)
   const [form, setForm]         = useState(EMPTY_FORM);
   const [images, setImages]     = useState([]);
   const [saving, setSaving]     = useState(false);
@@ -31,16 +30,23 @@ const Products = () => {
 
   useEffect(load, []);
 
-  const openCreate = () => { setEditing(null); setForm(EMPTY_FORM); setImages([]); setError(''); setShowModal(true); };
-  const openEdit   = (p) => {
-    setEditing(p._id);
+  const openCreate = () => {
+    setEditing(null);
+    setForm(EMPTY_FORM);
+    setImages([]);
+    setError('');
+    setShowModal(true);
+  };
+
+  // API returns `id` (not `_id`) — use it for all API calls
+  const openEdit = (p) => {
+    setEditing(p.id);
     setForm({
       name: p.name || '', make: p.make || '', model: p.model || '',
       year: p.year || '', price: p.price || '', currency: p.currency || 'GHS',
       condition: p.condition || 'used', category: p.category || 'sedan',
       availability: p.availability || 'available', mileage: p.mileage || '',
-      colour: p.colour || '', transmission: p.transmission || '',
-      fuel_type: p.fuel_type || '', description: p.description || '',
+      colour: p.colour || '', description: p.description || '',
       features: (p.features || []).join(', '),
     });
     setImages([]);
@@ -66,7 +72,7 @@ const Products = () => {
       if (editing) {
         const updated = await updateProduct(editing, jsonPayload);
         if (images.length > 0) await addProductImages(editing, images);
-        setProducts((prev) => prev.map((p) => (p._id === editing ? { ...p, ...updated } : p)));
+        setProducts((prev) => prev.map((p) => (p.id === editing ? { ...p, ...updated } : p)));
       } else {
         const fd = new FormData();
         Object.entries(jsonPayload).forEach(([k, v]) => {
@@ -89,10 +95,10 @@ const Products = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this product?')) return;
+    if (!window.confirm('Delete this product? This also removes images from Cloudinary.')) return;
     try {
       await deleteProduct(id);
-      setProducts((prev) => prev.filter((p) => p._id !== id));
+      setProducts((prev) => prev.filter((p) => p.id !== id));
     } catch (err) {
       alert(extractErrorMessage(err));
     }
@@ -110,6 +116,8 @@ const Products = () => {
           <button onClick={openCreate} className="btn-primary flex items-center gap-2 text-sm"><Plus className="h-4 w-4" /> Add Vehicle</button>
         </div>
       </div>
+
+      {error && <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3">{error}</div>}
 
       {loading ? (
         <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-10 w-10 border-b-2 border-accent" /></div>
@@ -129,11 +137,11 @@ const Products = () => {
               </thead>
               <tbody className="divide-y divide-primary-800/50">
                 {products.map((p) => (
-                  <tr key={p._id} className="text-white">
+                  <tr key={p.id} className="text-white">
                     <td className="py-4 pr-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-10 rounded-lg overflow-hidden bg-primary-800 flex-shrink-0">
-                          {p.images?.[0]?.url && <img src={p.images[0].url} alt="" className="w-full h-full object-cover" />}
+                          {p.thumbnail && <img src={p.thumbnail} alt="" className="w-full h-full object-cover" />}
                         </div>
                         <div>
                           <p className="font-medium">{p.make} {p.model}</p>
@@ -152,14 +160,14 @@ const Products = () => {
                     <td className="py-4">
                       <div className="flex gap-2">
                         <button onClick={() => openEdit(p)} className="p-1.5 text-primary-400 hover:text-white hover:bg-primary-800 rounded-lg transition-colors"><Pencil className="h-4 w-4" /></button>
-                        <button onClick={() => handleDelete(p._id)} className="p-1.5 text-primary-400 hover:text-red-400 hover:bg-primary-800 rounded-lg transition-colors"><Trash2 className="h-4 w-4" /></button>
+                        <button onClick={() => handleDelete(p.id)} className="p-1.5 text-primary-400 hover:text-red-400 hover:bg-primary-800 rounded-lg transition-colors"><Trash2 className="h-4 w-4" /></button>
                       </div>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {products.length === 0 && <p className="text-primary-400 text-sm text-center py-10">No products found.</p>}
+            {products.length === 0 && <p className="text-primary-400 text-sm text-center py-10">No products yet. Add your first vehicle.</p>}
           </div>
         </>
       )}
@@ -188,13 +196,13 @@ const Products = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-primary-400 mb-1">Condition</label>
+                  <label className="block text-xs text-primary-400 mb-1">Condition *</label>
                   <select name="condition" className="input-field" value={form.condition} onChange={handleChange}>
-                    <option value="new">New</option><option value="used">Used</option><option value="certified">Certified</option>
+                    <option value="new">New</option><option value="used">Used</option>
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs text-primary-400 mb-1">Category</label>
+                  <label className="block text-xs text-primary-400 mb-1">Category *</label>
                   <select name="category" className="input-field" value={form.category} onChange={handleChange}>
                     {['sedan','suv','truck','van','coupe','convertible','hatchback'].map((c) => <option key={c} value={c} className="capitalize">{c}</option>)}
                   </select>
@@ -207,16 +215,19 @@ const Products = () => {
                 </div>
                 <div><label className="block text-xs text-primary-400 mb-1">Mileage (km)</label><input name="mileage" type="number" className="input-field" value={form.mileage} onChange={handleChange} /></div>
                 <div><label className="block text-xs text-primary-400 mb-1">Colour</label><input name="colour" className="input-field" value={form.colour} onChange={handleChange} /></div>
-                <div><label className="block text-xs text-primary-400 mb-1">Transmission</label><input name="transmission" className="input-field" placeholder="automatic / manual" value={form.transmission} onChange={handleChange} /></div>
-                <div><label className="block text-xs text-primary-400 mb-1">Fuel Type</label><input name="fuel_type" className="input-field" placeholder="petrol / diesel / electric" value={form.fuel_type} onChange={handleChange} /></div>
               </div>
 
               <div><label className="block text-xs text-primary-400 mb-1">Display Name</label><input name="name" className="input-field" placeholder="e.g. 2020 Toyota Camry SE" value={form.name} onChange={handleChange} /></div>
-              <div><label className="block text-xs text-primary-400 mb-1">Features (comma-separated)</label><input name="features" className="input-field" placeholder="Sunroof, Backup Camera, Leather Seats" value={form.features} onChange={handleChange} /></div>
-              <div><label className="block text-xs text-primary-400 mb-1">Description</label><textarea name="description" rows={3} className="input-field resize-none" value={form.description} onChange={handleChange} /></div>
 
               <div>
-                <label className="block text-xs text-primary-400 mb-1">Images</label>
+                <label className="block text-xs text-primary-400 mb-1">Description *</label>
+                <textarea name="description" rows={3} required className="input-field resize-none" placeholder="Describe the vehicle..." value={form.description} onChange={handleChange} />
+              </div>
+
+              <div><label className="block text-xs text-primary-400 mb-1">Features (comma-separated)</label><input name="features" className="input-field" placeholder="Sunroof, Backup Camera, Leather Seats" value={form.features} onChange={handleChange} /></div>
+
+              <div>
+                <label className="block text-xs text-primary-400 mb-1">Images {editing ? '(add more)' : ''}</label>
                 <input
                   type="file"
                   multiple
@@ -229,7 +240,9 @@ const Products = () => {
 
               <div className="flex justify-end gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)} className="btn-outline">Cancel</button>
-                <button type="submit" disabled={saving} className="btn-primary disabled:opacity-60">{saving ? 'Saving...' : editing ? 'Save Changes' : 'Add Vehicle'}</button>
+                <button type="submit" disabled={saving} className="btn-primary disabled:opacity-60">
+                  {saving ? 'Saving...' : editing ? 'Save Changes' : 'Add Vehicle'}
+                </button>
               </div>
             </form>
           </div>

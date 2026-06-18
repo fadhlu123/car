@@ -7,6 +7,8 @@ import Layout from './pages/Layout';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
 import Products from './pages/Products';
+import Team from './pages/Team';
+import AcceptInvite from './pages/AcceptInvite';
 
 function App() {
   return (
@@ -14,6 +16,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/accept-invite/:token" element={<AcceptInvite />} />
+          <Route path="/accept-invite" element={<AcceptInvite />} />
           <Route
             path="/"
             element={
@@ -25,6 +29,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="orders"   element={<Orders />} />
             <Route path="products" element={<Products />} />
+            <Route path="team"     element={<Team />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

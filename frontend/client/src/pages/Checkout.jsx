@@ -11,15 +11,15 @@ const Checkout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    name: user ? `${user.first_name} ${user.last_name}` : '',
+    name:  user ? `${user.first_name} ${user.last_name}`.trim() : '',
     email: user?.email || '',
     phone: '',
     notes: '',
   });
-  const [error, setError] = useState('');
+  const [error, setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const total    = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const currency = cartItems[0]?.currency || 'GHS';
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
@@ -33,15 +33,16 @@ const Checkout = () => {
       const payload = {
         items: cartItems.map((item) => ({
           product_id: item.productId,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
+          name:       item.name,
+          price:      item.price,
+          currency:   item.currency || 'GHS',
+          quantity:   item.quantity,
         })),
         customer: {
-          name: form.name,
+          name:  form.name,
           email: form.email,
           phone: form.phone,
-          notes: form.notes,
+          ...(form.notes ? { notes: form.notes } : {}),
         },
       };
       const order = await submitOrder(payload);
@@ -86,10 +87,10 @@ const Checkout = () => {
               </div>
               <div>
                 <label className="block text-sm font-medium text-primary-300 mb-1">Phone Number</label>
-                <input name="phone" type="tel" required className="input-field" placeholder="+233..." value={form.phone} onChange={handleChange} />
+                <input name="phone" type="tel" required className="input-field" placeholder="+233 XX XXX XXXX" value={form.phone} onChange={handleChange} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary-300 mb-1">Notes (optional)</label>
+                <label className="block text-sm font-medium text-primary-300 mb-1">Notes <span className="text-primary-500 text-xs">(optional)</span></label>
                 <textarea name="notes" rows={3} className="input-field resize-none" placeholder="Any special requests..." value={form.notes} onChange={handleChange} />
               </div>
               <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
@@ -106,8 +107,8 @@ const Checkout = () => {
             <div className="space-y-3 mb-4">
               {cartItems.map((item) => (
                 <div key={item.productId} className="flex justify-between text-sm">
-                  <span className="text-primary-300 truncate mr-2">{item.name}</span>
-                  <span className="text-white font-medium flex-shrink-0">{formatCurrency(item.price, item.currency)}</span>
+                  <span className="text-primary-300 truncate mr-2">{item.name} ×{item.quantity}</span>
+                  <span className="text-white font-medium flex-shrink-0">{formatCurrency(item.price * item.quantity, item.currency)}</span>
                 </div>
               ))}
             </div>

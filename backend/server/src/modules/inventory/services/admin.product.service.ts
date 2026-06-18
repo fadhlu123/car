@@ -84,6 +84,7 @@ export const createProduct = async (
 
   const doc = await Product.create({
     ...data,
+    is_published: true,
     images:     imageResults.map((r) => ({ url: r.url, public_id: r.public_id })),
     created_by: new mongoose.Types.ObjectId(adminId),
   });
