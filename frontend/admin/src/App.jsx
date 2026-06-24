@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Layout from './pages/Layout';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
-import Products from './pages/Products';
+import Products from './pages/Products';//
 import Team from './pages/Team';
 import Users from './pages/Users';
 import Notifications from './pages/Notifications';
