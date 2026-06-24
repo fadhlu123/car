@@ -1,6 +1,6 @@
 import express, { Application, Request, Response } from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
+import cors from 'cors'; //
 import { corsOptions } from './configs/cors.config';
 import { helmetOptions } from './configs/helmet.config';
 import { requestId, globalLimiter, mongoSanitize } from './gateway/security';
