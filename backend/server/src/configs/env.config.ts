@@ -38,12 +38,12 @@ const envSchema = z.object({
   VAPID_SUBJECT:     z.string().optional(), // must be mailto: or https: URL
 
   // CORS — comma-separated list of allowed origins (client + admin dev/prod URLs)
-  CLIENT_URL: z.string().default('http://localhost:5173'),
+  CLIENT_URL: z.string(),
 
   // Single-origin admin portal URL — used to build admin-facing email/push links
   // (invite links, new-order alerts). Keep separate from CLIENT_URL since that
   // one is a comma-joined CORS list, not a single safe link target.
-  ADMIN_CLIENT_URL: z.string().default('http://localhost:5174'),
+  ADMIN_CLIENT_URL: z.string(),
 
   // Logging
   SERVICE_NAME: z.string().default('ecommerce-api'),
