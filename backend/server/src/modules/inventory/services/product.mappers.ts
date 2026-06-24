@@ -1,4 +1,4 @@
-import { IProduct } from '../models/product.model';
+import { IProduct } from '../../../models/product.model';
 import { ProductSummary, ProductDetail } from '../types/inventory.types';
 
 export const toSummary = (doc: IProduct): ProductSummary => ({

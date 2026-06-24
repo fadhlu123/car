@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
-import { AuthProvider, UserRole, AdminRole } from '../types/auth.types';
-import { databaseManager } from '../../../configs/database.config';
-
-export const USER_DB = 'auto-majid-users';
+import { AuthProvider, UserRole, AdminRole } from '../modules/auth/types/auth.types';
 
 export interface IUser extends Document {
   email: string;
@@ -51,7 +48,6 @@ let _User: Model<IUser> | null = null;
 
 export const getUserModel = async (): Promise<Model<IUser>> => {
   if (_User) return _User;
-  const conn = await databaseManager.getConnection(USER_DB);
-  _User = conn.model<IUser>('User', UserSchema);
+  _User = mongoose.models.User || mongoose.model<IUser>('User', UserSchema);
   return _User;
 };

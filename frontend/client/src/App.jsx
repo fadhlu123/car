@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import BroadcastBanner from './components/BroadcastBanner';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // Public pages
@@ -21,6 +22,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import OrderConfirmation from './pages/OrderConfirmation';
 import Profile from './pages/Profile';
+import MyBookings from './pages/MyBookings';
 
 function App() {
   return (
@@ -28,6 +30,7 @@ function App() {
       <CartProvider>
         <Router>
           <div className="flex flex-col min-h-screen">
+            <BroadcastBanner />
             <Navbar />
             <main className="flex-grow">
               <Routes>
@@ -54,6 +57,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/my-bookings"
+                  element={
+                    <ProtectedRoute>
+                      <MyBookings />
                     </ProtectedRoute>
                   }
                 />

@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { OrderStatus } from '../types/orders.types';
-
-export const ORDERS_DB = 'auto-majid-orders';
+import { OrderStatus } from '../modules/orders/types/orders.types';
 
 interface IStatusHistoryEntry {
   status: OrderStatus;
@@ -92,7 +89,6 @@ let _Order: mongoose.Model<IOrder> | null = null;
 
 export const getOrderModel = async (): Promise<mongoose.Model<IOrder>> => {
   if (_Order) return _Order;
-  const conn = await databaseManager.getConnection(ORDERS_DB);
-  _Order = conn.model<IOrder>('Order', OrderSchema);
+  _Order = mongoose.models.Order || mongoose.model<IOrder>('Order', OrderSchema);
   return _Order;
 };

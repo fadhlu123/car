@@ -1,6 +1,4 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { USER_DB } from './user.model';
 
 export interface ISession extends Document {
   user_id: Types.ObjectId;
@@ -33,7 +31,6 @@ let _Session: Model<ISession> | null = null;
 
 export const getSessionModel = async (): Promise<Model<ISession>> => {
   if (_Session) return _Session;
-  const conn = await databaseManager.getConnection(USER_DB);
-  _Session = conn.model<ISession>('Session', SessionSchema);
+  _Session = mongoose.models.Session || mongoose.model<ISession>('Session', SessionSchema);
   return _Session;
 };

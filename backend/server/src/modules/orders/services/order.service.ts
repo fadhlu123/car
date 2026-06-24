@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { getOrderModel } from '../models/order.model';
+import { getOrderModel } from '../../../models/order.model';
 import { notifyCustomerOrderReceived, notifyAdminNewOrder } from './order.notify.service';
-import { SubmitOrderInput, OrderDetail } from '../types/orders.types';
+import { toDetail, toSummary } from './order.mappers';
+import { SubmitOrderInput, OrderDetail, ListOrdersResult } from '../types/orders.types';
 
 const logger = createLogger('order-service');
 
@@ -11,30 +12,6 @@ const ERRORS = {
   MIXED_CURRENCIES:  'All cart items must use the same currency',
   EMPTY_CART:        'Order must contain at least one item',
 } as const;
-
-const toDetail = (doc: any): OrderDetail => ({
-  id:           doc._id.toString(),
-  items:        doc.items.map((i: any) => ({
-    product_id: i.product_id.toString(),
-    name:       i.name,
-    price:      i.price,
-    currency:   i.currency,
-    quantity:   i.quantity,
-  })),
-  customer:     doc.customer,
-  status:       doc.status,
-  total_amount: doc.total_amount,
-  currency:     doc.currency,
-  status_history: (doc.status_history ?? []).map((h: any) => ({
-    status:     h.status,
-    changed_by: h.changed_by?.toString(),
-    notes:      h.notes,
-    changed_at: h.changed_at,
-  })),
-  user_id:    doc.user_id?.toString(),
-  created_at: doc.created_at,
-  updated_at: doc.updated_at,
-});
 
 export const submitOrder = async (
   data: SubmitOrderInput,
@@ -81,4 +58,29 @@ export const submitOrder = async (
   ]);
 
   return order;
+};
+
+// ── Logged-in customer: their own order history ───────────────────────────────
+
+export const listMyOrders = async (
+  userId: string,
+  page  = 1,
+  limit = 20
+): Promise<ListOrdersResult> => {
+  const Order  = await getOrderModel();
+  const skip   = (page - 1) * limit;
+  const filter = { user_id: new mongoose.Types.ObjectId(userId) };
+
+  const [docs, total] = await Promise.all([
+    Order.find(filter).sort({ created_at: -1 }).skip(skip).limit(limit).lean(),
+    Order.countDocuments(filter),
+  ]);
+
+  return {
+    orders:      docs.map(toSummary),
+    total,
+    page,
+    limit,
+    total_pages: Math.ceil(total / limit),
+  };
 };

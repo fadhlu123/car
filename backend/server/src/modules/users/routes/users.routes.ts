@@ -26,9 +26,9 @@ router.patch('/user/profile', protect, ...profile.updateProfile);
 // ── Admin — user management (any admin) ──────────────────────────────────────
 router.get(  '/admin/users',                 adminProtect, ...adminUsers.listUsers);
 router.get(  '/admin/users/:id',             adminProtect, ...adminUsers.getUserDetail);
-router.patch('/admin/users/:id/unlock',      adminProtect, ...adminUsers.unlockAccount);
-router.patch('/admin/users/:id/deactivate',  adminProtect, ...adminUsers.deactivateAccount);
-router.patch('/admin/users/:id/activate',    adminProtect, ...adminUsers.activateAccount);
+router.patch('/admin/users/:id/unlock',      ownerProtect, ...adminUsers.unlockAccount);
+router.patch('/admin/users/:id/deactivate',  ownerProtect, ...adminUsers.deactivateAccount);
+router.patch('/admin/users/:id/activate',    ownerProtect, ...adminUsers.activateAccount);
 
 // ── Admin — team management (owner only) ─────────────────────────────────────
 router.get(   '/admin/team',                  adminProtect, adminTeam.listTeam);

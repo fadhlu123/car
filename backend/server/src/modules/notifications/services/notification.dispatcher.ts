@@ -4,11 +4,16 @@ import { env } from '../../../configs/env.config';
 import { renderTemplate } from '../email/email.engine';
 import { sendEmail } from '../email/email.sender';
 import { sseManager } from '../sse/sse.manager';
-import { getNotificationModel } from '../models/notification.model';
+import { getNotificationModel } from '../../../models/notification.model';
 import { sendPushToUser, sendPushToAllAdmins } from './push.service';
 import { DispatchEvent, InAppNotification } from '../types/notifications.types';
 
 const logger = createLogger('notification-dispatcher');
+
+// CLIENT_URL is a comma-joined CORS allow-list (e.g. both the client and admin
+// dev ports) — never safe to drop directly into a link. Use the first entry as
+// the single customer-facing origin for email/push links.
+const primaryClientUrl = env.CLIENT_URL.split(',')[0].trim();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -55,8 +60,7 @@ const email = async (
   ctx:      Record<string, unknown>
 ): Promise<void> => {
   try {
-    const clientUrl = env.CLIENT_URL;
-    const html = await renderTemplate(template, { ...ctx, clientUrl });
+    const html = await renderTemplate(template, { ...ctx, clientUrl: primaryClientUrl });
     await sendEmail({ to, subject, html });
   } catch (err: any) {
     logger.warn('Failed to send email', { to, template, error: err.message });
@@ -132,7 +136,7 @@ export const dispatch = async (event: DispatchEvent): Promise<void> => {
       await push('user', event.userId, {
         title: `Welcome to ${env.SERVICE_NAME}!`,
         body:  'Your account is ready. Explore our inventory.',
-        url:   env.CLIENT_URL,
+        url:   primaryClientUrl,
       });
       break;
     }
@@ -234,7 +238,8 @@ export const dispatch = async (event: DispatchEvent): Promise<void> => {
     // ── New order admin alert ────────────────────────────────────────────────
     case 'new_order_admin': {
       const { order } = event;
-      const adminOrderUrl = `${env.CLIENT_URL}/admin/orders/${order.id}`;
+      // No order-detail page exists in the admin app yet — link to the orders list.
+      const adminOrderUrl = `${env.ADMIN_CLIENT_URL}/orders`;
       await email(
         env.EMAIL_FROM ?? 'admin@example.com',
         `New order from ${order.customer.name}`,
@@ -259,7 +264,7 @@ export const dispatch = async (event: DispatchEvent): Promise<void> => {
       await push('all_admins', null, {
         title: 'New order received',
         body:  `${order.customer.name} — ${order.currency} ${order.total_amount}`,
-        url:   `${env.CLIENT_URL}/admin/orders/${order.id}`,
+        url:   adminOrderUrl,
         tag:   `order-${order.id}`,
       });
       break;
@@ -288,7 +293,7 @@ export const dispatch = async (event: DispatchEvent): Promise<void> => {
         await push('user', event.userId, {
           title: 'Order update',
           body:  `Your order #${shortId(order.id)} is now ${order.status}.`,
-          url:   `${env.CLIENT_URL}/orders/${order.id}`,
+          url:   `${primaryClientUrl}/my-bookings`,
           tag:   `order-update-${order.id}`,
         });
       }

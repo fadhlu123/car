@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AppError } from '../../../utils/error.utils';
 import { verifyUserAccessToken, verifyAdminAccessToken } from '../services/auth.token.service';
-import { getUserModel } from '../models/user.model';
+import { getUserModel } from '../../../models/user.model';
 
 const ERRORS = {
   NO_TOKEN:   'Authentication token is required',
@@ -15,6 +15,16 @@ const ERRORS = {
 const extractBearer = (req: Request): string | null => {
   const auth = req.headers.authorization;
   return auth?.startsWith('Bearer ') ? auth.slice(7) : null;
+};
+
+// Browser EventSource cannot set custom headers, so SSE routes also accept
+// the token as a query param. Kept separate from extractBearer so every other
+// route still requires a real Authorization header.
+const extractSSEToken = (req: Request): string | null => {
+  const bearer = extractBearer(req);
+  if (bearer) return bearer;
+  const queryToken = req.query.token;
+  return typeof queryToken === 'string' ? queryToken : null;
 };
 
 // ── Core guards ───────────────────────────────────────────────────────────────
@@ -46,7 +56,7 @@ export const adminProtect = (req: Request, _res: Response, next: NextFunction): 
     req.admin = verifyAdminAccessToken(token);
     next();
   } catch {
-    next(new AppError(ERRORS.ADMIN_ONLY, 403));
+    next(new AppError(ERRORS.INVALID, 401));
   }
 };
 
@@ -63,7 +73,37 @@ export const ownerProtect = (req: Request, _res: Response, next: NextFunction): 
     req.admin = payload;
     next();
   } catch {
-    next(new AppError(ERRORS.ADMIN_ONLY, 403));
+    next(new AppError(ERRORS.INVALID, 401));
+  }
+};
+
+/**
+ * Same as `protect`, but also accepts the token via `?token=` query param —
+ * required for the SSE stream routes since EventSource can't set headers.
+ */
+export const protectSSE = (req: Request, _res: Response, next: NextFunction): void => {
+  const token = extractSSEToken(req);
+  if (!token) return next(new AppError(ERRORS.NO_TOKEN, 401));
+  try {
+    req.user = verifyUserAccessToken(token);
+    next();
+  } catch {
+    next(new AppError(ERRORS.INVALID, 401));
+  }
+};
+
+/**
+ * Same as `adminProtect`, but also accepts the token via `?token=` query param —
+ * required for the admin SSE stream route since EventSource can't set headers.
+ */
+export const adminProtectSSE = (req: Request, _res: Response, next: NextFunction): void => {
+  const token = extractSSEToken(req);
+  if (!token) return next(new AppError(ERRORS.NO_TOKEN, 401));
+  try {
+    req.admin = verifyAdminAccessToken(token);
+    next();
+  } catch {
+    next(new AppError(ERRORS.INVALID, 401));
   }
 };
 

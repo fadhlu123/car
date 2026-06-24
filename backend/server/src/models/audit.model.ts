@@ -1,7 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { AuditEvent } from '../types/auth.types';
-import { USER_DB } from './user.model';
+import { AuditEvent } from '../modules/auth/types/auth.types';
 
 export interface IAudit extends Document {
   user_id?: Types.ObjectId;
@@ -32,7 +30,6 @@ let _Audit: Model<IAudit> | null = null;
 
 export const getAuditModel = async (): Promise<Model<IAudit>> => {
   if (_Audit) return _Audit;
-  const conn = await databaseManager.getConnection(USER_DB);
-  _Audit = conn.model<IAudit>('Audit', AuditSchema);
+  _Audit = mongoose.models.Audit || mongoose.model<IAudit>('Audit', AuditSchema);
   return _Audit;
 };

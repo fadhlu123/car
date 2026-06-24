@@ -1,3 +1,4 @@
+import { env } from '../../../configs/env.config';
 import { dispatch } from '../../notifications/services/notification.dispatcher';
 
 export const sendAdminInviteEmail = (
@@ -5,7 +6,10 @@ export const sendAdminInviteEmail = (
   rawToken:     string,
   inviterName:  string
 ): Promise<void> => {
-  const inviteUrl = `${process.env.CLIENT_URL ?? 'http://localhost:5173'}/admin/accept-invite?token=${rawToken}`;
+  // Must point at the admin app's own origin + its actual route (/accept-invite,
+  // not /admin/accept-invite — there is no /admin prefix in the admin app's router).
+  const token = encodeURIComponent(rawToken);
+  const inviteUrl = `${env.ADMIN_CLIENT_URL.replace(/\/$/, '')}/accept-invite/${token}?token=${token}`;
   return dispatch({ type: 'admin_invite', email: inviteeEmail, inviterName, inviteUrl });
 };
 

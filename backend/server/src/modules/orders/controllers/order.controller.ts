@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
-import { sendCreated } from '../../../utils/response.utils';
+import { sendCreated, sendSuccess } from '../../../utils/response.utils';
 import { validate } from '../../../utils/request.utils';
 import * as svc from '../services/order.service';
 
@@ -32,6 +32,22 @@ export const submitOrder = [
       const userId = req.user?.sub;
       const order  = await svc.submitOrder(req.body, userId);
       sendCreated(res, order, 'Order submitted successfully. We will be in touch shortly.');
+    } catch (err) { next(err); }
+  },
+];
+
+const pageSchema = z.object({
+  page:  z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export const getMyOrders = [
+  validate(pageSchema, 'query'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { page, limit } = req.query as any;
+      const result = await svc.listMyOrders(req.user!.sub, Number(page), Number(limit));
+      sendSuccess(res, result, 'Orders retrieved');
     } catch (err) { next(err); }
   },
 ];

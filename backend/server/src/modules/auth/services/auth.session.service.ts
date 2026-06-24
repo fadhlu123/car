@@ -1,8 +1,8 @@
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
 import { DeviceContext, detectDeviceType } from '../../../utils/request.utils';
-import { getSessionModel } from '../models/session.model';
-import { getUserModel } from '../models/user.model';
+import { getSessionModel } from '../../../models/session.model';
+import { getUserModel } from '../../../models/user.model';
 import {
   signUserAccessToken, signAdminAccessToken,
   signUserRefreshToken, signAdminRefreshToken,

@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { AppError } from '../../../utils/error.utils';
-import { getOtpModel } from '../models/otp.model';
+import { getOtpModel } from '../../../models/otp.model';
 import { OtpType } from '../types/auth.types';
 
 const OTP_EXPIRY_MS  = 10 * 60 * 1000;  // 10 minutes

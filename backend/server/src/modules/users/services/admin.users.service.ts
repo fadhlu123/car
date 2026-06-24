@@ -1,8 +1,8 @@
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
 import { DeviceContext } from '../../../utils/request.utils';
-import { getUserModel } from '../../auth/models/user.model';
-import { getAuditModel } from '../../auth/models/audit.model';
+import { getUserModel } from '../../../models/user.model';
+import { getAuditModel } from '../../../models/audit.model';
 import { logEvent } from '../../auth/services/auth.audit.service';
 import { revokeAllUserSessions, revokeAllAdminSessions } from '../../auth/services/auth.session.service';
 import {

@@ -1,6 +1,4 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { NOTIFICATIONS_DB } from './notification.model';
 
 export interface IBroadcast extends Document {
   title:        string;
@@ -35,7 +33,6 @@ let _Broadcast: mongoose.Model<IBroadcast> | null = null;
 
 export const getBroadcastModel = async (): Promise<mongoose.Model<IBroadcast>> => {
   if (_Broadcast) return _Broadcast;
-  const conn = await databaseManager.getConnection(NOTIFICATIONS_DB);
-  _Broadcast = conn.model<IBroadcast>('Broadcast', BroadcastSchema);
+  _Broadcast = mongoose.models.Broadcast || mongoose.model<IBroadcast>('Broadcast', BroadcastSchema);
   return _Broadcast;
 };

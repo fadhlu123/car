@@ -1,7 +1,5 @@
 import mongoose, { Schema, Document, Model, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { OtpType } from '../types/auth.types';
-import { USER_DB } from './user.model';
+import { OtpType } from '../modules/auth/types/auth.types';
 
 export interface IOtp extends Document {
   user_id: Types.ObjectId;
@@ -30,7 +28,6 @@ let _Otp: Model<IOtp> | null = null;
 
 export const getOtpModel = async (): Promise<Model<IOtp>> => {
   if (_Otp) return _Otp;
-  const conn = await databaseManager.getConnection(USER_DB);
-  _Otp = conn.model<IOtp>('Otp', OtpSchema);
+  _Otp = mongoose.models.Otp || mongoose.model<IOtp>('Otp', OtpSchema);
   return _Otp;
 };

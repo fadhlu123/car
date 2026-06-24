@@ -1,5 +1,5 @@
 import { createLogger } from '../../../utils/logger.utils';
-import { getAuditModel } from '../models/audit.model';
+import { getAuditModel } from '../../../models/audit.model';
 import { AuditEvent } from '../types/auth.types';
 
 const logger = createLogger('auth-audit');

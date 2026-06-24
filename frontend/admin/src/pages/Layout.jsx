@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight, Users } from 'lucide-react';
+import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight, Users as UsersIcon, UserCog, Megaphone, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import NotificationBell from '../components/NotificationBell';
 
 const NAV = [
-  { to: '/',         label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/orders',   label: 'Orders',    icon: ShoppingBag },
-  { to: '/products', label: 'Products',  icon: Car },
-  { to: '/team',     label: 'Team',      icon: Users },
+  { to: '/',            label: 'Dashboard',   icon: LayoutDashboard, end: true },
+  { to: '/orders',      label: 'Orders',      icon: ShoppingBag },
+  { to: '/products',    label: 'Products',    icon: Car },
+  { to: '/users',       label: 'Users',       icon: UsersIcon },
+  { to: '/team',        label: 'Team',        icon: UserCog },
+  { to: '/notifications', label: 'Notifications', icon: Bell },
+  { to: '/broadcasts',  label: 'Broadcasts',  icon: Megaphone },
 ];
 
 const SideNav = ({ onNav, admin, onLogout }) => (
@@ -97,7 +101,12 @@ const Layout = () => {
             <Menu className="h-6 w-6" />
           </button>
           <span className="font-bold text-white">Auto <span className="text-accent">Majid</span></span>
-          <div className="w-8" />
+          <NotificationBell />
+        </header>
+
+        {/* Desktop topbar */}
+        <header className="hidden lg:flex items-center justify-end px-6 py-3 border-b border-primary-800 bg-primary-900/40">
+          <NotificationBell />
         </header>
 
         <main className="flex-grow p-6 overflow-auto">

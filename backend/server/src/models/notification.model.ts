@@ -1,8 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { NotificationType } from '../types/notifications.types';
-
-export const NOTIFICATIONS_DB = 'auto-majid-notifications';
+import { NotificationType } from '../modules/notifications/types/notifications.types';
 
 export interface INotification extends Document {
   // Null means "all admins" (shared admin-panel notifications like new_order)
@@ -38,7 +35,6 @@ let _Notification: mongoose.Model<INotification> | null = null;
 
 export const getNotificationModel = async (): Promise<mongoose.Model<INotification>> => {
   if (_Notification) return _Notification;
-  const conn = await databaseManager.getConnection(NOTIFICATIONS_DB);
-  _Notification = conn.model<INotification>('Notification', NotificationSchema);
+  _Notification = mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema);
   return _Notification;
 };

@@ -1,5 +1,5 @@
 import { AppError } from '../../../utils/error.utils';
-import { getUserModel } from '../../auth/models/user.model';
+import { getUserModel } from '../../../models/user.model';
 import { UserSummary } from '../../auth/types/auth.types';
 
 const ERRORS = {

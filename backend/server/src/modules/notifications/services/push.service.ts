@@ -2,7 +2,7 @@ import webpush from 'web-push';
 import mongoose from 'mongoose';
 import { env } from '../../../configs/env.config';
 import { createLogger } from '../../../utils/logger.utils';
-import { getPushSubscriptionModel } from '../models/push-subscription.model';
+import { getPushSubscriptionModel } from '../../../models/push-subscription.model';
 
 const logger = createLogger('push-service');
 

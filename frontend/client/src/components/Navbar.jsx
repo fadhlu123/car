@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Car, Menu, X, User as UserIcon, ShoppingCart } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -36,6 +37,7 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
+                <NotificationBell />
               <div className="relative group">
                 <button className="flex items-center space-x-2 text-white font-medium hover:text-accent transition-colors">
                   <div className="w-8 h-8 rounded-full bg-primary-800 flex items-center justify-center border border-primary-700">
@@ -88,10 +90,15 @@ const Navbar = () => {
           {user ? (
             <>
                <div className="border-t border-primary-800 my-2 pt-2"></div>
+               <div className="flex items-center justify-between px-3 py-2">
+                 <span className="text-sm font-medium text-primary-300">Notifications</span>
+                 <NotificationBell />
+               </div>
                {user.role === 'admin' && (
                  <Link to="/admin" className="block px-3 py-3 rounded-md text-base font-medium text-white hover:bg-primary-800">Admin Dashboard</Link>
                )}
                <Link to="/profile" className="block px-3 py-3 rounded-md text-base font-medium text-white hover:bg-primary-800">My Profile</Link>
+               <Link to="/my-bookings" className="block px-3 py-3 rounded-md text-base font-medium text-white hover:bg-primary-800">My Bookings</Link>
                <button onClick={logout} className="block w-full text-left px-3 py-3 rounded-md text-base font-medium text-red-400 hover:bg-primary-800">Logout</button>
             </>
           ) : (

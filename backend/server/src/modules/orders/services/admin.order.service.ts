@@ -1,13 +1,13 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { getOrderModel } from '../models/order.model';
+import { getOrderModel } from '../../../models/order.model';
 import { notifyCustomerStatusUpdate } from './order.notify.service';
+import { toDetail, toSummary } from './order.mappers';
 import {
   AdminListOrdersQuery,
   ListOrdersResult,
   OrderDetail,
-  OrderSummary,
   OrderStatus,
   STATUS_TRANSITIONS,
 } from '../types/orders.types';
@@ -20,40 +20,6 @@ const ERRORS = {
   INVALID_TRANSITION: (from: string, to: string) =>
     `Cannot move order from '${from}' to '${to}'`,
 } as const;
-
-const toSummary = (doc: any): OrderSummary => ({
-  id:           doc._id.toString(),
-  customer:     { name: doc.customer.name, email: doc.customer.email, phone: doc.customer.phone },
-  status:       doc.status,
-  item_count:   doc.items.length,
-  total_amount: doc.total_amount,
-  currency:     doc.currency,
-  created_at:   doc.created_at,
-});
-
-const toDetail = (doc: any): OrderDetail => ({
-  id:           doc._id.toString(),
-  items:        doc.items.map((i: any) => ({
-    product_id: i.product_id.toString(),
-    name:       i.name,
-    price:      i.price,
-    currency:   i.currency,
-    quantity:   i.quantity,
-  })),
-  customer:     doc.customer,
-  status:       doc.status,
-  total_amount: doc.total_amount,
-  currency:     doc.currency,
-  status_history: (doc.status_history ?? []).map((h: any) => ({
-    status:     h.status,
-    changed_by: h.changed_by?.toString(),
-    notes:      h.notes,
-    changed_at: h.changed_at,
-  })),
-  user_id:    doc.user_id?.toString(),
-  created_at: doc.created_at,
-  updated_at: doc.updated_at,
-});
 
 export const listOrders = async (query: AdminListOrdersQuery): Promise<ListOrdersResult> => {
   const Order = await getOrderModel();

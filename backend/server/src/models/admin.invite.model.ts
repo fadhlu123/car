@@ -1,6 +1,4 @@
-import { Schema, Document, Model, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-import { USER_DB } from '../../auth/models/user.model';
+import mongoose, { Schema, Document, Model, Types } from 'mongoose';
 
 export type InviteStatus = 'pending' | 'accepted' | 'revoked';
 
@@ -33,7 +31,6 @@ let _AdminInvite: Model<IAdminInvite> | null = null;
 
 export const getAdminInviteModel = async (): Promise<Model<IAdminInvite>> => {
   if (_AdminInvite) return _AdminInvite;
-  const conn = await databaseManager.getConnection(USER_DB);
-  _AdminInvite = conn.model<IAdminInvite>('AdminInvite', AdminInviteSchema);
+  _AdminInvite = mongoose.models.AdminInvite || mongoose.model<IAdminInvite>('AdminInvite', AdminInviteSchema);
   return _AdminInvite;
 };

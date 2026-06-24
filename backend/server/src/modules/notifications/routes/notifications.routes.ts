@@ -1,7 +1,9 @@
 import { Router } from 'express';
 import {
   protect,
+  protectSSE,
   adminProtect,
+  adminProtectSSE,
   ownerProtect,
   optionalProtect,
 } from '../../auth/middleware/auth.middleware';
@@ -13,7 +15,7 @@ const router = Router();
 
 // ─── User: SSE stream ─────────────────────────────────────────────────────────
 // Must be registered before body-parsing — SSE keeps the connection open
-router.get('/notifications/stream', protect, userCtrl.streamNotifications);
+router.get('/notifications/stream', protectSSE, userCtrl.streamNotifications);
 
 // ─── User: in-app notifications ───────────────────────────────────────────────
 router.get(  '/notifications',                   protect, ...userCtrl.listNotifications);
@@ -23,7 +25,7 @@ router.patch('/notifications/:id/read',          protect, userCtrl.markRead);
 router.patch('/notifications/read-all',          protect, userCtrl.markAllRead);
 
 // ─── Admin: SSE stream ────────────────────────────────────────────────────────
-router.get('/admin/notifications/stream', adminProtect, adminCtrl.streamAdminNotifications);
+router.get('/admin/notifications/stream', adminProtectSSE, adminCtrl.streamAdminNotifications);
 
 // ─── Admin: in-app notifications ──────────────────────────────────────────────
 router.get(  '/admin/notifications',              adminProtect, ...adminCtrl.listAdminNotifications);

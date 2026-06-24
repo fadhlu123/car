@@ -15,14 +15,6 @@ async function startServer() {
     logger.info("Connecting to database...");
     await databaseManager.connect();
 
-    // Eagerly open all module DB connections so the first real request
-    // never has to wait for a cold Atlas handshake.
-    await databaseManager.warmUp([
-      'auto-majid-users',
-      'auto-majid-inventory',
-      'auto-majid-orders',
-    ]);
-
     // Create raw HTTP Server
     const httpServer = http.createServer(app);
 

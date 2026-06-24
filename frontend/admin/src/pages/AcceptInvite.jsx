@@ -4,13 +4,28 @@ import { Car, CheckCircle } from 'lucide-react';
 import { getInviteInfo, acceptInvite } from '../services/team.service';
 import { extractErrorMessage } from '../utils/error.utils';
 
+const readInviteTokenFromPath = () => {
+  if (typeof window === 'undefined') return null;
+  const match = window.location.pathname.match(/\/accept-invite\/([^/]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
+
+const formatInviter = (invitedBy) => {
+  if (!invitedBy) return '';
+  if (typeof invitedBy === 'string') return invitedBy;
+  if (typeof invitedBy === 'object') {
+    return invitedBy.name || invitedBy.email || '';
+  }
+  return '';
+};
+
 const AcceptInvite = () => {
   const { token: paramToken } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
   // Token can be in URL path (/accept-invite/:token) or query (?token=xxx)
-  const token = paramToken || searchParams.get('token');
+  const token = paramToken || searchParams.get('token') || readInviteTokenFromPath();
 
   const [info, setInfo]       = useState(null);
   const [infoError, setInfoError] = useState('');
@@ -94,7 +109,7 @@ const AcceptInvite = () => {
                 <h2 className="text-xl font-bold text-white mb-1">Accept Invite</h2>
                 {info?.invited_by && (
                   <p className="text-primary-400 text-sm">
-                    You were invited by <span className="text-white">{info.invited_by}</span> to join Auto Majid as an admin.
+                    You were invited by <span className="text-white">{formatInviter(info.invited_by)}</span> to join Auto Majid as an admin.
                   </p>
                 )}
               </div>

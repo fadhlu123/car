@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { getProductModel } from '../models/product.model';
+import { getProductModel } from '../../../models/product.model';
 import { toSummary, toDetail } from './product.mappers';
 import { ListProductsQuery, ListResult, ProductDetail } from '../types/inventory.types';
 

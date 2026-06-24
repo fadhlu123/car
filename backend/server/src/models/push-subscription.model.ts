@@ -1,7 +1,4 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-
-const NOTIFICATIONS_DB = 'auto-majid-notifications';
 
 export interface IPushSubscription extends Document {
   user_id:        Types.ObjectId;
@@ -33,7 +30,6 @@ let _model: mongoose.Model<IPushSubscription> | null = null;
 
 export const getPushSubscriptionModel = async (): Promise<mongoose.Model<IPushSubscription>> => {
   if (_model) return _model;
-  const conn = await databaseManager.getConnection(NOTIFICATIONS_DB);
-  _model = conn.model<IPushSubscription>('PushSubscription', schema);
+  _model = mongoose.models.PushSubscription || mongoose.model<IPushSubscription>('PushSubscription', schema);
   return _model;
 };

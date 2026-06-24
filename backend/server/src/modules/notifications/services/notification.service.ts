@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
-import { getNotificationModel } from '../models/notification.model';
-import { getBroadcastModel } from '../models/broadcast.model';
+import { getNotificationModel } from '../../../models/notification.model';
+import { getBroadcastModel } from '../../../models/broadcast.model';
 import { InAppNotification, BroadcastPayload, NotificationFeed } from '../types/notifications.types';
 
 const ERRORS = {

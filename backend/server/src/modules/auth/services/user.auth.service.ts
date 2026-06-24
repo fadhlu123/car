@@ -2,7 +2,7 @@ import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
 import { hashPassword, comparePassword } from '../../../utils/crypto.utils';
 import { DeviceContext } from '../../../utils/request.utils';
-import { getUserModel } from '../models/user.model';
+import { getUserModel } from '../../../models/user.model';
 import {
   createUserSession,
   refreshUserSession,

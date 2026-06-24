@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { getProductModel } from '../models/product.model';
+import { getProductModel } from '../../../models/product.model';
 import { uploadImageBuffer, deleteImageFromCloud } from '../../../utils/upload.utils';
 import { toSummary, toDetail } from './product.mappers';
 import {

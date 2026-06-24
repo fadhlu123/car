@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { getNotificationModel } from '../models/notification.model';
-import { getBroadcastModel } from '../models/broadcast.model';
+import { getNotificationModel } from '../../../models/notification.model';
+import { getBroadcastModel } from '../../../models/broadcast.model';
 import { sseManager } from '../sse/sse.manager';
 import { InAppNotification, BroadcastPayload, NotificationFeed } from '../types/notifications.types';
 

@@ -1,7 +1,4 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import { databaseManager } from '../../../configs/database.config';
-
-export const INVENTORY_DB = 'auto-majid-inventory';
 
 export interface IProductImage {
   _id: Types.ObjectId;
@@ -73,7 +70,6 @@ let _Product: mongoose.Model<IProduct> | null = null;
 
 export const getProductModel = async (): Promise<mongoose.Model<IProduct>> => {
   if (_Product) return _Product;
-  const conn = await databaseManager.getConnection(INVENTORY_DB);
-  _Product = conn.model<IProduct>('Product', ProductSchema);
+  _Product = mongoose.models.Product || mongoose.model<IProduct>('Product', ProductSchema);
   return _Product;
 };

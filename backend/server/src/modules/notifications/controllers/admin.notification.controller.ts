@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { sendSuccess, sendCreated, sendNoContent } from '../../../utils/response.utils';
 import { validate } from '../../../utils/request.utils';
+import { withImageUpload as multerUpload, uploadImageBuffer } from '../../../utils/upload.utils';
 import { sseManager } from '../sse/sse.manager';
 import * as svc from '../services/admin.notification.service';
 
@@ -22,6 +23,9 @@ const broadcastSchema = z.object({
 const updateBroadcastSchema = broadcastSchema.partial().extend({
   is_active: z.boolean().optional(),
 });
+
+const broadcastUpload = multerUpload('image', 1);
+const IMAGE_FOLDER = 'auto-majid/broadcasts';
 
 // ── Admin SSE stream ──────────────────────────────────────────────────────────
 export const streamAdminNotifications = (req: Request, res: Response): void => {
@@ -84,9 +88,15 @@ export const liveStats = (_req: Request, res: Response, next: NextFunction) => {
 
 // ── Broadcasts ────────────────────────────────────────────────────────────────
 export const createBroadcast = [
+  broadcastUpload,
   validate(broadcastSchema, 'body'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const files = (req.files as Express.Multer.File[]) ?? [];
+      if (files.length > 0) {
+        const uploaded = await uploadImageBuffer(files[0].buffer, IMAGE_FOLDER);
+        req.body.image_url = uploaded.url;
+      }
       const broadcast = await svc.createBroadcast(req.body, req.admin!.sub);
       sendCreated(res, broadcast, 'Broadcast published successfully');
     } catch (err) { next(err); }
@@ -105,9 +115,15 @@ export const listBroadcasts = [
 ];
 
 export const updateBroadcast = [
+  broadcastUpload,
   validate(updateBroadcastSchema, 'body'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const files = (req.files as Express.Multer.File[]) ?? [];
+      if (files.length > 0) {
+        const uploaded = await uploadImageBuffer(files[0].buffer, IMAGE_FOLDER);
+        req.body.image_url = uploaded.url;
+      }
       const broadcast = await svc.updateBroadcast(req.params.id, req.body);
       sendSuccess(res, broadcast, 'Broadcast updated');
     } catch (err) { next(err); }
