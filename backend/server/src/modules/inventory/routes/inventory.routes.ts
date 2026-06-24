@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { adminProtect } from '../../auth/middleware/auth.middleware';
 import * as publicCtrl from '../controllers/product.controller';
 import * as adminCtrl  from '../controllers/admin.product.controller';
 
-const router = Router();
+const router: RouterType = Router();
 
 // ─── Public ──────────────────────────────────────────────────────────────────
 router.get('/products',     publicCtrl.listProducts);

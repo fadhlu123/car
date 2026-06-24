@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import { optionalProtect, protect, adminProtect } from '../../auth/middleware/auth.middleware';
 import * as publicCtrl from '../controllers/order.controller';
 import * as adminCtrl  from '../controllers/admin.order.controller';
 
-const router = Router();
+const router: RouterType = Router();
 
 // ─── Public ───────────────────────────────────────────────────────────────────
 // optionalProtect attaches req.user if a valid token is present — guest orders work too

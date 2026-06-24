@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import rateLimit from 'express-rate-limit';
 import {
   protect,
@@ -17,7 +17,7 @@ const inviteLimiter = rateLimit({
   message: { success: false, message: 'Too many invite attempts. Please try again later.', data: null },
 });
 
-const router = Router();
+const router: RouterType = Router();
 
 // ── User self-service ─────────────────────────────────────────────────────────
 router.get( '/user/profile',  protect, profile.getProfile);

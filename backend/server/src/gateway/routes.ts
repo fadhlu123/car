@@ -1,6 +1,6 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 
-const router = Router();
+const router: RouterType = Router();
 
 // Phase 1 — Auth (register, login, OAuth, sessions, password management)
 import authRouter from '../modules/auth/routes/auth.routes';

@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import rateLimit from 'express-rate-limit';
 import { protect, adminProtect } from '../middleware/auth.middleware';
 import * as user  from '../controllers/user.auth.controller';
@@ -13,7 +13,7 @@ const authLimiter = rateLimit({
   message: { success: false, message: 'Too many requests. Please try again later.', data: null },
 });
 
-const router = Router();
+const router: RouterType = Router();
 
 // ── User auth ─────────────────────────────────────────────────────────────────
 router.post('/register',             authLimiter, ...user.register);

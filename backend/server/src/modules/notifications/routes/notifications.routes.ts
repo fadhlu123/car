@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, type Router as RouterType } from 'express';
 import {
   protect,
   protectSSE,
@@ -11,7 +11,7 @@ import * as userCtrl  from '../controllers/notification.controller';
 import * as adminCtrl from '../controllers/admin.notification.controller';
 import * as pushCtrl  from '../controllers/push.controller';
 
-const router = Router();
+const router: RouterType = Router();
 
 // ─── User: SSE stream ─────────────────────────────────────────────────────────
 // Must be registered before body-parsing — SSE keeps the connection open
