@@ -26,6 +26,7 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional(),
   GOOGLE_CLIENT_SECRET: z.string().optional(),
   ADMIN_EMAILS: z.string().optional(),
+  ADMIN_REGISTRATION_KEY: z.string().optional(),
 
   // GitHub OAuth — Phase 1
   GITHUB_CLIENT_ID: z.string().optional(),

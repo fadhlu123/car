@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './context/AuthContext';
 import AdminRoute from './components/AdminRoute';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Layout from './pages/Layout';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
@@ -19,6 +20,7 @@ function App() {
       <Router>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/accept-invite/:token" element={<AcceptInvite />} />
           <Route path="/accept-invite" element={<AcceptInvite />} />
           <Route

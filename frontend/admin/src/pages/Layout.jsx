@@ -17,14 +17,13 @@ const NAV = [
 const SideNav = ({ onNav, admin, onLogout }) => (
   <nav className="flex flex-col h-full">
     <div className="p-6 border-b border-primary-800">
-      <div className="flex items-center gap-2">
-        <Car className="h-7 w-7 text-accent" />
-        <span className="font-bold text-white text-lg">Auto <span className="text-accent">Majid</span></span>
+      <div className="flex items-center group cursor-pointer">
+        <img src="/logo.jpg" alt="Auto Majid Logo" className="h-12 w-auto object-contain group-hover:drop-shadow-[0_0_15px_rgba(239,68,68,0.5)] group-hover:scale-105 transition-all duration-300 rounded-xl" />
       </div>
       <p className="text-xs text-primary-500 mt-1">Admin Panel</p>
     </div>
 
-    <ul className="flex-grow p-4 space-y-1">
+    <ul className="grow p-4 space-y-1">
       {NAV.map(({ to, label, icon: Icon, end }) => (
         <li key={to}>
           <NavLink
@@ -47,7 +46,7 @@ const SideNav = ({ onNav, admin, onLogout }) => (
 
     <div className="p-4 border-t border-primary-800">
       <div className="flex items-center gap-3 px-4 py-2 mb-2">
-        <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-primary-700 flex items-center justify-center shrink-0">
           <span className="text-xs font-bold text-white">
             {admin?.first_name?.[0]}{admin?.last_name?.[0]}
           </span>
@@ -80,7 +79,7 @@ const Layout = () => {
   return (
     <div className="flex min-h-screen bg-primary-950">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-primary-900 border-r border-primary-800 flex-shrink-0">
+      <aside className="hidden lg:flex flex-col w-64 bg-primary-900 border-r border-primary-800 shrink-0">
         <SideNav admin={admin} onLogout={handleLogout} />
       </aside>
 
@@ -94,13 +93,15 @@ const Layout = () => {
         </div>
       )}
 
-      <div className="flex-grow flex flex-col min-w-0">
+      <div className="grow flex flex-col min-w-0">
         {/* Mobile topbar */}
         <header className="lg:hidden flex items-center justify-between px-4 py-4 border-b border-primary-800 bg-primary-900">
           <button onClick={() => setOpen(true)} className="text-white p-1">
             <Menu className="h-6 w-6" />
           </button>
-          <span className="font-bold text-white">Auto <span className="text-accent">Majid</span></span>
+          <div className="flex items-center">
+            <img src="/logo.jpg" alt="Auto Majid Logo" className="h-10 w-auto object-contain rounded-xl" />
+          </div>
           <NotificationBell />
         </header>
 
@@ -109,7 +110,7 @@ const Layout = () => {
           <NotificationBell />
         </header>
 
-        <main className="flex-grow p-6 overflow-auto">
+        <main className="grow p-6 overflow-auto">
           <Outlet />
         </main>
       </div>

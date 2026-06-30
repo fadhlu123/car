@@ -35,6 +35,7 @@ export type AuditEvent =
   | 'google_linked'
   | 'admin_login_success'
   | 'admin_login_failed'
+  | 'admin_register'
   | 'admin_invited'
   | 'admin_invite_accepted'
   | 'admin_removed';

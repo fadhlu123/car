@@ -21,8 +21,8 @@ export default {
           950: '#020617',
         },
         accent: {
-          DEFAULT: '#2dd4bf',
-          hover:   '#0f766e',
+          DEFAULT: '#dc2626',
+          hover:   '#991b1b',
         },
       },
       fontFamily: {

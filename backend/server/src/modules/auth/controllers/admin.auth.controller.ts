@@ -12,6 +12,14 @@ const loginSchema = z.object({
   password: z.string().min(1),
 });
 
+const registerSchema = z.object({
+  first_name:       z.string().min(1),
+  last_name:        z.string().min(1),
+  email:            z.string().email(),
+  password:         z.string().min(8, 'Password must be at least 8 characters'),
+  registration_key: z.string().min(1, 'Registration key is required'),
+});
+
 const refreshSchema = z.object({ refresh_token: z.string().min(1) });
 
 const auditQuerySchema = z.object({
@@ -26,6 +34,17 @@ const auditQuerySchema = z.object({
 });
 
 // ── Controllers ───────────────────────────────────────────────────────────────
+
+export const adminRegister = [
+  validate(registerSchema, 'body'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { email, password, first_name, last_name, registration_key } = req.body;
+      const result = await svc.adminRegister(email, password, first_name, last_name, registration_key, extractDeviceContext(req));
+      sendSuccess(res, result, 'Admin registered successfully', 201);
+    } catch (err) { next(err); }
+  },
+];
 
 export const adminLogin = [
   validate(loginSchema, 'body'),

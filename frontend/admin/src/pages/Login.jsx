@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
@@ -68,6 +68,13 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <p className="text-center text-sm text-primary-400">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-accent hover:underline font-medium">
+            Create admin account
+          </Link>
+        </p>
       </div>
     </div>
   );

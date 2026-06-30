@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { adminLogin as loginService, adminLogout as logoutService } from '../services/auth.service';
+import { adminLogin as loginService, adminLogout as logoutService, adminRegister as registerService } from '../services/auth.service';
 import { storeAuth, clearAuth, getStoredUser, getAccessToken } from '../utils/storage.utils';
 
 const AuthContext = createContext();
@@ -30,6 +30,13 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const register = async (first_name, last_name, email, password, registration_key) => {
+    const data = await registerService(first_name, last_name, email, password, registration_key);
+    storeAuth(data);
+    setAdmin(data.user);
+    return data;
+  };
+
   const logout = async () => {
     try { await logoutService(); } catch (_) {}
     clearAuth();
@@ -37,7 +44,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ admin, login, logout, loading }}>
+    <AuthContext.Provider value={{ admin, login, register, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );

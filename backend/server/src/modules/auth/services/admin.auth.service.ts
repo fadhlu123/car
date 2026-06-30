@@ -1,6 +1,6 @@
 import { AppError } from '../../../utils/error.utils';
 import { createLogger } from '../../../utils/logger.utils';
-import { comparePassword } from '../../../utils/crypto.utils';
+import { comparePassword, hashPassword } from '../../../utils/crypto.utils';
 import { DeviceContext } from '../../../utils/request.utils';
 import { getUserModel } from '../../../models/user.model';
 import {
@@ -24,6 +24,8 @@ const ERRORS = {
   ACCOUNT_INACTIVE:    'Admin account has been deactivated',
   ACCOUNT_LOCKED:      'Account temporarily locked. Try again in 15 minutes.',
   USER_NOT_FOUND:      'Admin account not found',
+  EMAIL_IN_USE:        'An admin account with this email already exists',
+  INVALID_REG_KEY:     'Invalid registration key',
 } as const;
 
 const OWNER_EMAILS = (env.ADMIN_EMAILS ?? '')
@@ -103,6 +105,54 @@ export const adminLogin = async (email: string, password: string, ctx: Ctx): Pro
     access_token:  accessToken,
     refresh_token: refreshToken,
     user: { ...toSummary(user), admin_role: adminRole },
+  };
+};
+
+// ── Register ──────────────────────────────────────────────────────────────────
+
+export const adminRegister = async (
+  email: string,
+  password: string,
+  first_name: string,
+  last_name: string,
+  registration_key: string,
+  ctx: Ctx
+): Promise<AuthResult> => {
+  // Gate registration behind a secret key stored in env
+  const expectedKey = env.ADMIN_REGISTRATION_KEY;
+  if (!expectedKey || registration_key !== expectedKey) {
+    throw new AppError(ERRORS.INVALID_REG_KEY, 403);
+  }
+
+  const normalised   = email.toLowerCase().trim();
+  const isOwnerEmail = OWNER_EMAILS.includes(normalised);
+  const adminRole: AdminRole = isOwnerEmail ? 'owner' : 'staff';
+
+  const User = await getUserModel();
+  const existing = await User.findOne({ email: normalised });
+  if (existing) {
+    throw new AppError(ERRORS.EMAIL_IN_USE, 409);
+  }
+
+  const password_hash = await hashPassword(password);
+  const user = await User.create({
+    email: normalised,
+    password_hash,
+    role: 'admin',
+    admin_role: adminRole,
+    is_active: true,
+    email_verified: true,
+    profile: { first_name: first_name.trim(), last_name: last_name.trim() },
+  });
+
+  await logEvent({ userId: user._id.toString(), email: normalised, event: 'admin_register', success: true, ...ctx, persist: true });
+  logger.info('New admin registered', { userId: user._id, adminRole });
+
+  const { accessToken, refreshToken } = await createAdminSession(user._id.toString(), user.email, ctx, adminRole);
+  return {
+    access_token:  accessToken,
+    refresh_token: refreshToken,
+    user: toSummary(user),
   };
 };
 

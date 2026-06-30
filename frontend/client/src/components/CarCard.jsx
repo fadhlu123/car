@@ -6,7 +6,7 @@ import { formatCurrency } from '../utils/format.utils';
 const CarCard = ({ vehicle }) => {
   return (
     <div className="card p-4 group bg-primary-900 border border-primary-800 hover:border-accent transition-colors shadow-lg flex flex-col">
-      <div className="relative aspect-[16/10] overflow-hidden rounded-lg mb-4 bg-primary-950">
+      <div className="relative aspect-16/10 overflow-hidden rounded-lg mb-4 bg-primary-950">
         <img
           src={vehicle.thumbnail || 'https://images.unsplash.com/photo-1542282088-fe8426682b8f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}
           alt={`${vehicle.make} ${vehicle.model}`}
@@ -17,7 +17,7 @@ const CarCard = ({ vehicle }) => {
         </div>
       </div>
 
-      <div className="flex-grow flex flex-col">
+      <div className="grow flex flex-col">
         <h3 className="font-bold text-xl text-white mb-1">{vehicle.make} {vehicle.model}</h3>
         <p className="text-sm text-primary-400 mb-4 capitalize">{vehicle.category}</p>
 

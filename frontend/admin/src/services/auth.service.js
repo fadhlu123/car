@@ -1,5 +1,8 @@
 import { apiClient } from './apiClient';
 
+export const adminRegister = (first_name, last_name, email, password, registration_key) =>
+  apiClient.post('/auth/admin/register', { first_name, last_name, email, password, registration_key }).then(r => r.data.data);
+
 export const adminLogin = (email, password) =>
   apiClient.post('/auth/admin/login', { email, password }).then(r => r.data.data);
 

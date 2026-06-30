@@ -40,6 +40,7 @@ router.get( '/sessions',             protect, user.listSessions);
 router.delete('/sessions/:id',       protect, ...user.deleteSession);
 
 // ── Admin auth ────────────────────────────────────────────────────────────────
+router.post('/admin/register',       authLimiter, ...admin.adminRegister);
 router.post('/admin/login',          authLimiter, ...admin.adminLogin);
 router.post('/admin/logout',         adminProtect, admin.adminLogout);
 router.post('/admin/refresh',        ...admin.adminRefresh);
