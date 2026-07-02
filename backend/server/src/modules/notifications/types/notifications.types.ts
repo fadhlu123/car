@@ -10,6 +10,7 @@ export type UserNotificationType =
   | 'password_changed'
   | 'order_received'
   | 'order_update'
+  | 'chat_reply'
   | 'broadcast';
 
 export type AdminNotificationType =
@@ -17,7 +18,8 @@ export type AdminNotificationType =
   | 'new_user'
   | 'product_sold'
   | 'invite_accepted'
-  | 'team_member_removed';
+  | 'team_member_removed'
+  | 'new_chat_message';
 
 export type NotificationType = UserNotificationType | AdminNotificationType;
 
@@ -85,4 +87,6 @@ export type DispatchEvent =
   | { type: 'team_member_removed'; adminId: string; removedName: string }
   | { type: 'order_received';      userId?: string; order: OrderSnapshot }
   | { type: 'new_order_admin';     order: OrderSnapshot }
-  | { type: 'order_status_update'; userId?: string; order: OrderSnapshot; previousStatus: string };
+  | { type: 'order_status_update'; userId?: string; order: OrderSnapshot; previousStatus: string }
+  | { type: 'new_chat_message_admin'; customerName: string; preview: string }
+  | { type: 'chat_reply_user';        userId: string; preview: string };

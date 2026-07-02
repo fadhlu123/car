@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { login as loginService, logout as logoutService } from '../services/auth.service';
+import { login as loginService, logout as logoutService, googleAuth } from '../services/auth.service';
 import {
   storeAuth, clearAuth, getStoredUser, getAccessToken,
 } from '../utils/storage.utils';
@@ -32,6 +32,13 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const loginWithGoogle = async (idToken) => {
+    const data = await googleAuth(idToken);
+    storeAuth(data);
+    setUser(data.user);
+    return data;
+  };
+
   const logout = async () => {
     try { await logoutService(); } catch (_) {}
     clearAuth();
@@ -43,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
+    <AuthContext.Provider value={{ user, login, loginWithGoogle, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

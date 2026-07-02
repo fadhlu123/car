@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { ENV } from '../configs/env.config';
 import { getAccessToken } from '../utils/storage.utils';
 
-const EVENTS = ['notification', 'new_order', 'broadcast', 'broadcast_removed'];
+const EVENTS = ['notification', 'new_order', 'broadcast', 'broadcast_removed', 'chat_message'];
 
 // Browser EventSource can't refresh its URL, so the access token it was opened
 // with goes stale after 15 min. We tear down and reopen on an interval so the

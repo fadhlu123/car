@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Key, Monitor, LogOut, Trash2 } from 'lucide-react';
+import { GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../context/AuthContext';
-import { getProfile, getSessions, revokeSession, changePassword } from '../services/auth.service';
+import { getProfile, getSessions, revokeSession, changePassword, linkGoogle } from '../services/auth.service';
 import { formatDate } from '../utils/format.utils';
 import { extractErrorMessage } from '../utils/error.utils';
 
@@ -13,6 +14,21 @@ const Profile = () => {
   const [pwSuccess, setPwSuccess] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
   const [tab, setTab] = useState('profile');
+  const [linkError, setLinkError] = useState('');
+  const [linkSuccess, setLinkSuccess] = useState('');
+
+  const handleLinkGoogle = async (credentialResponse) => {
+    setLinkError('');
+    setLinkSuccess('');
+    try {
+      await linkGoogle(credentialResponse.credential);
+      setLinkSuccess('Google account connected.');
+      const refreshed = await getProfile();
+      updateUser(refreshed);
+    } catch (err) {
+      setLinkError(extractErrorMessage(err));
+    }
+  };
 
   useEffect(() => {
     getProfile().then(updateUser).catch(() => {});
@@ -97,6 +113,23 @@ const Profile = () => {
           <button onClick={logout} className="mt-6 flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors">
             <LogOut className="h-4 w-4" /> Sign out
           </button>
+
+          <div className="mt-6 pt-6 border-t border-primary-800">
+            <p className="text-xs text-primary-500 mb-3">Connected accounts</p>
+            {linkError && <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3 mb-3">{linkError}</div>}
+            {linkSuccess && <div className="bg-green-900/30 border border-green-800 text-green-300 text-sm rounded-lg px-4 py-3 mb-3">{linkSuccess}</div>}
+            {user?.provider === 'google' ? (
+              <p className="text-sm text-primary-300">Google account connected.</p>
+            ) : (
+              <GoogleLogin
+                onSuccess={handleLinkGoogle}
+                onError={() => setLinkError('Could not connect Google account. Please try again.')}
+                theme="filled_black"
+                shape="pill"
+                text="continue_with"
+              />
+            )}
+          </div>
         </div>
       )}
 

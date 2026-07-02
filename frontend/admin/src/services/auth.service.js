@@ -11,3 +11,9 @@ export const adminLogout = () =>
 
 export const getAdminProfile = () =>
   apiClient.get('/auth/admin/me').then(r => r.data.data);
+
+export const getAdminSessions = () =>
+  apiClient.get('/auth/admin/sessions').then(r => r.data.data);
+
+export const getAuditLogs = (params = {}) =>
+  apiClient.get('/auth/admin/audit-logs', { params }).then(r => r.data.data);

@@ -14,3 +14,12 @@ export const markRead = (id) =>
 
 export const markAllRead = () =>
   apiClient.patch('/notifications/read-all');
+
+export const getVapidKey = () =>
+  apiClient.get('/notifications/push/vapid-key').then(r => r.data.data.public_key);
+
+export const subscribePush = (subscription) =>
+  apiClient.post('/notifications/push/subscribe', subscription).then(r => r.data);
+
+export const unsubscribePush = (endpoint) =>
+  apiClient.delete('/notifications/push/unsubscribe', { data: { endpoint } }).then(r => r.data);

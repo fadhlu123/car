@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ShieldCheck, Calendar, Car as CarIcon, HeadphonesIcon, ArrowRight, Heart, Users, Settings, Gauge, CheckCircle2, Gift, Star, MapPin } from 'lucide-react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion } from 'framer-motion';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { getProducts } from '../services/inventory.service';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const Home = () => {
   const [featuredCars, setFeaturedCars] = useState([]);
-  const { scrollYProgress } = useScroll();
-  const yParallax = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
+  const heroRef = useRef(null);
+  const heroImgRef = useRef(null);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -21,15 +25,51 @@ const Home = () => {
     fetchCars();
   }, []);
 
+  // Hero reveal + scroll-linked parallax, driven by GSAP and kept in sync with
+  // Lenis's virtual scroll position (see useLenis.js) rather than native scroll
+  // events, so the effect can't desync from what the user actually sees.
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      gsap.fromTo(
+        heroImgRef.current,
+        { scale: 1.15, opacity: 0 },
+        { scale: 1, opacity: 0.6, duration: 1.8, ease: 'power3.out' }
+      );
+      // Logged-in users scroll inside AppLayout's own pane (#app-scroll-container),
+      // not the window — point ScrollTrigger at whichever is actually scrolling.
+      const scroller = document.getElementById('app-scroll-container') || window;
+
+      gsap.to(heroImgRef.current, {
+        yPercent: 15,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          scroller,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        },
+      });
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <div className="w-full bg-primary-950 text-white font-sans">
       {/* Hero Section */}
-      <div className="relative pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-hidden bg-primary-950">
-        {/* Parallax Background */}
-        <motion.div style={{ y: yParallax }} className="absolute inset-0 z-0">
-          <div className="absolute top-0 right-0 w-full lg:w-3/4 h-full bg-[url('https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-60 mix-blend-screen animate-hero-car origin-right" style={{ maskImage: 'linear-gradient(to right, transparent, black 40%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 40%)' }}></div>
-        </motion.div>
-        
+      <div ref={heroRef} className="relative pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-hidden bg-primary-950">
+        {/* GSAP-driven reveal + scroll parallax */}
+        <div className="absolute inset-0 z-0">
+          <img
+            ref={heroImgRef}
+            src="https://images.unsplash.com/photo-1555215695-3004980ad54e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+            alt=""
+            className="absolute top-0 right-0 w-full lg:w-3/4 h-full object-cover mix-blend-screen origin-right"
+            style={{ maskImage: 'linear-gradient(to right, transparent, black 40%)', WebkitMaskImage: 'linear-gradient(to right, transparent, black 40%)' }}
+          />
+        </div>
+
         {/* Moving Light Sweep Reflection */}
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <div className="w-[150%] h-[200%] bg-linear-to-r from-transparent via-white/10 to-transparent -translate-y-1/4 animate-light-sweep mix-blend-overlay"></div>

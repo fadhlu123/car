@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight, Users as UsersIcon, UserCog, Megaphone, Bell } from 'lucide-react';
+import { Car, LayoutDashboard, ShoppingBag, Menu, LogOut, ChevronRight, Users as UsersIcon, UserCog, Megaphone, Bell, Monitor, ScrollText, MessageSquare, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { usePush } from '../hooks/usePush';
 import NotificationBell from '../components/NotificationBell';
 
 const NAV = [
@@ -12,6 +13,10 @@ const NAV = [
   { to: '/team',        label: 'Team',        icon: UserCog },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/broadcasts',  label: 'Broadcasts',  icon: Megaphone },
+  { to: '/inbox',       label: 'Inbox',       icon: MessageSquare },
+  { to: '/content',     label: 'Site Content', icon: FileText },
+  { to: '/sessions',    label: 'Sessions',    icon: Monitor },
+  { to: '/audit-log',   label: 'Audit Log',   icon: ScrollText },
 ];
 
 const SideNav = ({ onNav, admin, onLogout }) => (
@@ -70,6 +75,7 @@ const Layout = () => {
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  usePush();
 
   const handleLogout = async () => {
     await logout();
@@ -79,7 +85,7 @@ const Layout = () => {
   return (
     <div className="flex min-h-screen bg-primary-950">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex flex-col w-64 bg-primary-900 border-r border-primary-800 shrink-0">
+      <aside className="hidden lg:flex flex-col w-64 glass border-r border-primary-800 shrink-0">
         <SideNav admin={admin} onLogout={handleLogout} />
       </aside>
 
@@ -87,7 +93,7 @@ const Layout = () => {
       {open && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <aside className="relative w-64 bg-primary-900 flex flex-col z-10">
+          <aside className="relative w-64 glass-strong flex flex-col z-10">
             <SideNav admin={admin} onLogout={handleLogout} onNav={() => setOpen(false)} />
           </aside>
         </div>
@@ -95,7 +101,7 @@ const Layout = () => {
 
       <div className="grow flex flex-col min-w-0">
         {/* Mobile topbar */}
-        <header className="lg:hidden flex items-center justify-between px-4 py-4 border-b border-primary-800 bg-primary-900">
+        <header className="lg:hidden glass sticky top-0 z-40 flex items-center justify-between px-4 py-4 border-b border-primary-800">
           <button onClick={() => setOpen(true)} className="text-white p-1">
             <Menu className="h-6 w-6" />
           </button>
@@ -106,7 +112,7 @@ const Layout = () => {
         </header>
 
         {/* Desktop topbar */}
-        <header className="hidden lg:flex items-center justify-end px-6 py-3 border-b border-primary-800 bg-primary-900/40">
+        <header className="hidden lg:flex glass sticky top-0 z-40 items-center justify-end px-6 py-3 border-b border-primary-800">
           <NotificationBell />
         </header>
 

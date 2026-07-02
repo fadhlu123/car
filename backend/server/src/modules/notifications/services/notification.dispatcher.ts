@@ -300,6 +300,38 @@ export const dispatch = async (event: DispatchEvent): Promise<void> => {
       break;
     }
 
+    // ── New chat message (admin inbox) ───────────────────────────────────────
+    case 'new_chat_message_admin': {
+      const adminInboxUrl = `${env.ADMIN_CLIENT_URL}/inbox`;
+      const n = await saveInApp(null, 'admin', 'new_chat_message',
+        'New message received',
+        `${event.customerName}: ${event.preview}`,
+        undefined, adminInboxUrl);
+      if (n) sseManager.pushToAllAdmins('notification', n);
+      await push('all_admins', null, {
+        title: 'New message received',
+        body:  `${event.customerName}: ${event.preview}`,
+        url:   adminInboxUrl,
+      });
+      break;
+    }
+
+    // ── Chat reply (customer) ────────────────────────────────────────────────
+    case 'chat_reply_user': {
+      const contactUrl = `${primaryClientUrl}/contact`;
+      const n = await saveInApp(event.userId, 'user', 'chat_reply',
+        'New reply from support',
+        event.preview,
+        undefined, contactUrl);
+      if (n) sseManager.pushToUser(event.userId, 'notification', n);
+      await push('user', event.userId, {
+        title: 'New reply from support',
+        body:  event.preview,
+        url:   contactUrl,
+      });
+      break;
+    }
+
     default: {
       logger.warn('Unknown dispatch event', { event: (event as any).type });
     }

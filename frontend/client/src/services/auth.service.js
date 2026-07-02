@@ -32,3 +32,9 @@ export const getSessions = () =>
 
 export const revokeSession = (id) =>
   apiClient.delete(`/auth/sessions/${id}`).then(r => r.data);
+
+export const googleAuth = (id_token) =>
+  apiClient.post('/auth/google', { id_token }).then(r => r.data.data);
+
+export const linkGoogle = (id_token) =>
+  apiClient.post('/auth/link/google', { id_token }).then(r => r.data);

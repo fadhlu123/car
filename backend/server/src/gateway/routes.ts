@@ -22,4 +22,12 @@ router.use('/', ordersRouter);
 import notificationsRouter from '../modules/notifications/routes/notifications.routes';
 router.use('/', notificationsRouter);
 
+// Contact Us chat (customer <-> admin messaging)
+import contactRouter from '../modules/contact/routes/contact.routes';
+router.use('/', contactRouter);
+
+// Site content (About Us CMS + Contact info)
+import contentRouter from '../modules/content/routes/content.routes';
+router.use('/', contentRouter);
+
 export default router;

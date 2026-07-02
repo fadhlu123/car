@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { Car } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
@@ -9,7 +10,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || '/';
@@ -29,6 +30,16 @@ const Login = () => {
       setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    try {
+      const data = await loginWithGoogle(credentialResponse.credential);
+      navigate(data.user?.email_verified === false ? '/verify-email' : from, { replace: true });
+    } catch (err) {
+      setError(extractErrorMessage(err));
     }
   };
 
@@ -75,6 +86,21 @@ const Login = () => {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px bg-primary-800 flex-grow" />
+          <span className="text-xs text-primary-500">OR</span>
+          <div className="h-px bg-primary-800 flex-grow" />
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google sign-in failed. Please try again.')}
+            theme="filled_black"
+            shape="pill"
+          />
+        </div>
 
         <p className="text-center text-sm text-primary-400">
           Don&apos;t have an account?{' '}

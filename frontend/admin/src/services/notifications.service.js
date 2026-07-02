@@ -34,3 +34,12 @@ export const deleteBroadcast = (id) =>
 
 export const getLiveStats = () =>
   apiClient.get('/admin/notifications/live-stats').then(r => r.data.data);
+
+export const getVapidKey = () =>
+  apiClient.get('/notifications/push/vapid-key').then(r => r.data.data.public_key);
+
+export const subscribePush = (subscription) =>
+  apiClient.post('/admin/notifications/push/subscribe', subscription).then(r => r.data);
+
+export const unsubscribePush = (endpoint) =>
+  apiClient.delete('/admin/notifications/push/unsubscribe', { data: { endpoint } }).then(r => r.data);

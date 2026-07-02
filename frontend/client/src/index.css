@@ -27,8 +27,27 @@
 
 /* Glassmorphism utility */
 .glass {
-  background: rgba(15, 23, 42, 0.7);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(18, 18, 18, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Stronger glass for full-screen overlays (mobile nav) where legibility over
+   arbitrary page content matters more than the softer look used on the sticky top nav. */
+.glass-strong {
+  background: rgba(18, 18, 18, 0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Newspaper-style drop cap for the About Us page's opening paragraph */
+.dropcap::first-letter {
+  float: left;
+  font-size: 3.5em;
+  line-height: 0.8;
+  padding-right: 0.1em;
+  font-weight: 700;
+  color: #dc2626;
 }

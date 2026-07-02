@@ -1,15 +1,18 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { GoogleLogin } from '@react-oauth/google';
 import { Car } from 'lucide-react';
 import { register } from '../services/auth.service';
 import { storeAuth } from '../utils/storage.utils';
 import { extractErrorMessage } from '../utils/error.utils';
+import { useAuth } from '../context/AuthContext';
 
 const Register = () => {
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', password: '', confirm: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { loginWithGoogle } = useAuth();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -26,6 +29,16 @@ const Register = () => {
       setError(extractErrorMessage(err));
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setError('');
+    try {
+      const data = await loginWithGoogle(credentialResponse.credential);
+      navigate(data.user?.email_verified === false ? '/verify-email' : '/', { replace: true });
+    } catch (err) {
+      setError(extractErrorMessage(err));
     }
   };
 
@@ -71,6 +84,21 @@ const Register = () => {
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
+
+        <div className="flex items-center gap-3">
+          <div className="h-px bg-primary-800 flex-grow" />
+          <span className="text-xs text-primary-500">OR</span>
+          <div className="h-px bg-primary-800 flex-grow" />
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => setError('Google sign-in failed. Please try again.')}
+            theme="filled_black"
+            shape="pill"
+          />
+        </div>
 
         <p className="text-center text-sm text-primary-400">
           Already have an account?{' '}
