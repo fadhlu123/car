@@ -8,7 +8,7 @@ export interface IUser extends Document {
   /** Only set when role === 'admin'. 'owner' = added via ADMIN_EMAILS env; 'staff' = invited. */
   admin_role?: AdminRole;
   providers: Array<{ provider: AuthProvider; provider_id: string }>;
-  profile: { first_name: string; last_name: string; avatar_url: string };
+  profile: { first_name: string; last_name: string; avatar_url: string; avatar_public_id?: string };
   email_verified: boolean;
   is_active: boolean;
   failed_login_attempts: number;
@@ -30,9 +30,10 @@ const UserSchema = new Schema<IUser>(
       },
     ],
     profile: {
-      first_name: { type: String, default: '' },
-      last_name:  { type: String, default: '' },
-      avatar_url: { type: String, default: '' },
+      first_name:       { type: String, default: '' },
+      last_name:        { type: String, default: '' },
+      avatar_url:       { type: String, default: '' },
+      avatar_public_id: { type: String },
     },
     email_verified:        { type: Boolean, default: false },
     is_active:             { type: Boolean, default: true },

@@ -9,27 +9,30 @@ import {
   revokeSession,
   revokeAllUserSessions,
   getActiveSessions,
+  getSessionHistory,
 } from './auth.session.service';
 import { verifyGoogleToken } from './auth.google.service';
 import { generateAndStoreOtp, verifyOtp } from './auth.otp.service';
 import { logEvent } from './auth.audit.service';
 import { sendEmailVerificationEmail } from './auth.notify.service';
 import { AuthResult, OAuthProfile, UserSummary } from '../types/auth.types';
+import { env } from '../../../configs/env.config';
 
 const logger = createLogger('user-auth');
 
 const LOCKOUT_THRESHOLD = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const LOCKOUT_DURATION_MS = env.LOCKOUT_DURATION_MINUTES * 60 * 1000;
 
 const ERRORS = {
   EMAIL_IN_USE:        'An account with this email already exists',
   INVALID_CREDENTIALS: 'Invalid email or password',
   ACCOUNT_INACTIVE:    'Your account has been deactivated. Contact support.',
-  ACCOUNT_LOCKED:      'Account temporarily locked due to too many failed attempts. Try again in 15 minutes.',
+  ACCOUNT_LOCKED:      `Account temporarily locked due to too many failed attempts. Try again in ${env.LOCKOUT_DURATION_MINUTES} minutes.`,
   GOOGLE_FAILED:       'Google authentication failed',
   USER_NOT_FOUND:      'User not found',
   ALREADY_LINKED:      'Google is already linked to this account',
   NO_PASSWORD:         'Set a password first before linking Google',
+  ADMIN_ACCOUNT:       'This account belongs to an admin. Please sign in at the admin portal instead.',
 } as const;
 
 type Ctx = DeviceContext;
@@ -136,6 +139,14 @@ export const login = async (
     throw new AppError(ERRORS.INVALID_CREDENTIALS, 401);
   }
 
+  // Correct password, but this is an admin/staff account — never hand out a
+  // customer session for it. Checked after password verification so a wrong
+  // guess doesn't leak "this email belongs to an admin" to an attacker.
+  if (user.role === 'admin') {
+    await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_failed', success: false, ...ctx, metadata: { reason: 'admin_account_on_user_login' }, persist: true });
+    throw new AppError(ERRORS.ADMIN_ACCOUNT, 403);
+  }
+
   // Successful login — reset lockout
   await User.findByIdAndUpdate(user._id, { failed_login_attempts: 0, locked_until: null, last_login: new Date() });
   await logEvent({ userId: user._id.toString(), email: user.email, event: 'login_success', success: true, ...ctx, persist: false });
@@ -176,8 +187,13 @@ export const getProfile = async (userId: string): Promise<UserSummary> => {
   return toSummary(user);
 };
 
-export const listSessions = async (userId: string) =>
-  getActiveSessions(userId, false);
+export const listSessions = async (userId: string) => {
+  const [active, history] = await Promise.all([
+    getActiveSessions(userId, false),
+    getSessionHistory(userId, false),
+  ]);
+  return { active, history };
+};
 
 export const deleteSession = async (sessionId: string, userId: string, ctx: Ctx): Promise<void> =>
   logout(sessionId, userId, ctx);
@@ -204,6 +220,14 @@ const handleOAuthProfile = async (profile: OAuthProfile, ctx: Ctx): Promise<Auth
   const User = await getUserModel();
   let user = await User.findOne({ email: profile.email.toLowerCase() });
 
+  // Google verified the email, so there's no credential to guess here — bail
+  // out before touching the record at all (don't even link the provider) if
+  // this email belongs to an admin/staff member. They never get a customer session.
+  if (user?.role === 'admin') {
+    logger.warn('Admin account attempted Google sign-in on the customer endpoint', { userId: user._id });
+    throw new AppError(ERRORS.ADMIN_ACCOUNT, 403);
+  }
+
   if (user) {
     const linked = user.providers.some((p) => p.provider === profile.provider);
     if (!linked) {
@@ -223,6 +247,7 @@ const handleOAuthProfile = async (profile: OAuthProfile, ctx: Ctx): Promise<Auth
   }
 
   if (!user.is_active) throw new AppError(ERRORS.ACCOUNT_INACTIVE, 403);
+
   await User.findByIdAndUpdate(user._id, { last_login: new Date() });
   logger.info('OAuth login success', { userId: user._id, provider: profile.provider });
 

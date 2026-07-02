@@ -6,6 +6,7 @@ import { register } from '../services/auth.service';
 import { storeAuth } from '../utils/storage.utils';
 import { extractErrorMessage } from '../utils/error.utils';
 import { useAuth } from '../context/AuthContext';
+import PasswordInput from '../components/ui/PasswordInput';
 
 const Register = () => {
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', password: '', confirm: '' });
@@ -74,11 +75,11 @@ const Register = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Password</label>
-            <input name="password" type="password" required minLength={8} className="input-field" value={form.password} onChange={handleChange} />
+            <PasswordInput name="password" required minLength={8} value={form.password} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Confirm Password</label>
-            <input name="confirm" type="password" required className="input-field" value={form.confirm} onChange={handleChange} />
+            <PasswordInput name="confirm" required value={form.confirm} onChange={handleChange} />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full mt-2 disabled:opacity-60">
             {loading ? 'Creating account...' : 'Create Account'}

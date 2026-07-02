@@ -3,6 +3,7 @@ import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { Car, CheckCircle } from 'lucide-react';
 import { getInviteInfo, acceptInvite } from '../services/team.service';
 import { extractErrorMessage } from '../utils/error.utils';
+import PasswordInput from '../components/ui/PasswordInput';
 
 const readInviteTokenFromPath = () => {
   if (typeof window === 'undefined') return null;
@@ -138,11 +139,11 @@ const AcceptInvite = () => {
                 </div>
                 <div>
                   <label className="block text-xs text-primary-400 mb-1">Password</label>
-                  <input name="password" type="password" required minLength={8} className="input-field" value={form.password} onChange={handleChange} />
+                  <PasswordInput name="password" required minLength={8} value={form.password} onChange={handleChange} />
                 </div>
                 <div>
                   <label className="block text-xs text-primary-400 mb-1">Confirm Password</label>
-                  <input name="confirm" type="password" required className="input-field" value={form.confirm} onChange={handleChange} />
+                  <PasswordInput name="confirm" required value={form.confirm} onChange={handleChange} />
                 </div>
                 <button type="submit" disabled={submitting} className="btn-primary w-full disabled:opacity-60">
                   {submitting ? 'Setting up account...' : 'Create Account & Join'}

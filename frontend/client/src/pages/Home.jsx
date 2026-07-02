@@ -58,7 +58,7 @@ const Home = () => {
   return (
     <div className="w-full bg-primary-950 text-white font-sans">
       {/* Hero Section */}
-      <div ref={heroRef} className="relative pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-hidden bg-primary-950">
+      <div ref={heroRef} className="relative isolate pt-20 pb-32 lg:pt-32 lg:pb-40 overflow-hidden bg-primary-950">
         {/* GSAP-driven reveal + scroll parallax */}
         <div className="absolute inset-0 z-0">
           <img

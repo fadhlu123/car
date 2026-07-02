@@ -5,6 +5,9 @@ export interface IMessage extends Document {
   sender_type:     'user' | 'admin';
   sender_id:       Types.ObjectId;
   sender_name:     string;
+  /** Only set when sender_type === 'admin' — lets us show customers a role tag
+   *  ("Owner"/"Staff") instead of the individual admin's real name. */
+  sender_role?:    'owner' | 'staff';
   body:            string;
   edited_at?:      Date;
   seen_at?:        Date;
@@ -17,6 +20,7 @@ const MessageSchema = new Schema<IMessage>(
     sender_type:      { type: String, required: true, enum: ['user', 'admin'] },
     sender_id:        { type: Schema.Types.ObjectId, required: true },
     sender_name:      { type: String, required: true, maxlength: 120 },
+    sender_role:      { type: String, enum: ['owner', 'staff'] },
     body:             { type: String, required: true, maxlength: 2000 },
     edited_at:        { type: Date },
     seen_at:          { type: Date },

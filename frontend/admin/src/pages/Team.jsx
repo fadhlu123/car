@@ -4,6 +4,7 @@ import { getTeam, inviteMember, removeMember } from '../services/team.service';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
 import { formatDate } from '../utils/format.utils';
+import Avatar from '../components/ui/Avatar';
 
 const ROLE_COLORS = {
   owner: 'bg-accent/20 text-accent border-accent/30',
@@ -131,16 +132,12 @@ const Team = () => {
               {members.map((m) => {
                 const memberId = m._id || m.id;
                 const isSelf = memberId === admin?.sub || memberId === admin?.id;
-                const fullName = `${m.first_name || ''} ${m.last_name || ''}`.trim() || m.email;
+                const fullName = `${m.profile?.first_name || ''} ${m.profile?.last_name || ''}`.trim() || m.email;
                 return (
                   <tr key={memberId} className="text-white">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-primary-700 flex items-center justify-center flex-shrink-0">
-                          <span className="text-xs font-bold">
-                            {(m.first_name?.[0] || '?')}{m.last_name?.[0] || ''}
-                          </span>
-                        </div>
+                        <Avatar url={m.profile?.avatar_url} name={fullName} size="w-9 h-9" />
                         <div>
                           <p className="font-medium">{fullName} {isSelf && <span className="text-xs text-accent ml-1">(you)</span>}</p>
                           <p className="text-xs text-primary-500">{m.email}</p>

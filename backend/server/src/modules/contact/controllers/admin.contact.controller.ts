@@ -32,7 +32,7 @@ export const postReply = [
   validate(messageSchema, 'body'),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const message = await svc.postAdminReply(req.params.id, req.admin!.sub, req.body.body);
+      const message = await svc.postAdminReply(req.params.id, req.admin!.sub, req.admin!.admin_role, req.body.body);
       sendCreated(res, message, 'Reply sent');
     } catch (err) { next(err); }
   },

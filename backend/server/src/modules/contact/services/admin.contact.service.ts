@@ -97,7 +97,12 @@ export const getConversation = async (id: string, adminId: string): Promise<Conv
   return toConversationDTO(convo, messages, { type: 'admin', id: adminId });
 };
 
-export const postAdminReply = async (id: string, adminId: string, body: string): Promise<MessageDTO> => {
+export const postAdminReply = async (
+  id: string,
+  adminId: string,
+  adminRole: 'owner' | 'staff',
+  body: string
+): Promise<MessageDTO> => {
   assertValidId(id);
   const Conversation = await getConversationModel();
   const Message      = await getMessageModel();
@@ -111,6 +116,7 @@ export const postAdminReply = async (id: string, adminId: string, body: string):
     sender_type:     'admin',
     sender_id:       new mongoose.Types.ObjectId(adminId),
     sender_name:     name,
+    sender_role:     adminRole,
     body,
   });
 
@@ -118,16 +124,19 @@ export const postAdminReply = async (id: string, adminId: string, body: string):
   convo.last_message_preview = body.slice(0, 200);
   await convo.save();
 
-  const dto = toMessageDTO(doc, { type: 'admin', id: adminId });
+  // The customer's view must never see the real admin name — build a separate,
+  // correctly-masked DTO per audience instead of reusing one object for both.
   const userId = convo.user_id.toString();
-  sseManager.pushToUser(userId, 'chat_message', { conversation_id: convo._id.toString(), message: dto });
-  sseManager.pushToAllAdmins('chat_message', { conversation_id: convo._id.toString(), message: dto });
+  const adminDto = toMessageDTO(doc, { type: 'admin', id: adminId });
+  const userDto  = toMessageDTO(doc, { type: 'user',  id: userId });
+  sseManager.pushToUser(userId, 'chat_message', { conversation_id: convo._id.toString(), message: userDto });
+  sseManager.pushToAllAdmins('chat_message', { conversation_id: convo._id.toString(), message: adminDto });
 
   notifyUserChatReply(userId, body).catch((err: any) =>
     logger.error('Customer chat-reply notification failed', { error: err?.message, stack: err?.stack })
   );
 
-  return dto;
+  return adminDto;
 };
 
 export const markSeenByAdmin = async (id: string): Promise<void> => {

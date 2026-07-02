@@ -1,29 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User, Key, Monitor, LogOut, Trash2, Camera } from 'lucide-react';
-import { GoogleLogin } from '@react-oauth/google';
+import { User, Key, Monitor, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getProfile, getSessions, revokeSession, changePassword, linkGoogle } from '../services/auth.service';
-import { uploadAvatar } from '../services/user.service';
+import {
+  getAdminProfile, getAdminSessions, changeAdminPassword, uploadAdminAvatar,
+} from '../services/auth.service';
 import { extractErrorMessage } from '../utils/error.utils';
 import PasswordInput from '../components/ui/PasswordInput';
 import TimeAgo from '../components/ui/TimeAgo';
 
 const deviceLabel = (sess) => sess.device_info?.user_agent || sess.device_info?.device_type || 'Unknown device';
 
-const Profile = () => {
-  const { user, logout, updateUser } = useAuth();
+const Account = () => {
+  const { admin, updateAdmin } = useAuth();
+  const [tab, setTab] = useState('profile');
   const [activeSessions, setActiveSessions] = useState([]);
   const [pastSessions, setPastSessions] = useState([]);
   const [pwForm, setPwForm] = useState({ current_password: '', new_password: '', confirm: '' });
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
   const [pwLoading, setPwLoading] = useState(false);
-  const [tab, setTab] = useState('sessions');
-  const [linkError, setLinkError] = useState('');
-  const [linkSuccess, setLinkSuccess] = useState('');
   const [avatarError, setAvatarError] = useState('');
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef(null);
+
+  useEffect(() => {
+    getAdminProfile().then(updateAdmin).catch(() => {});
+    if (tab === 'sessions') {
+      getAdminSessions()
+        .then((d) => {
+          setActiveSessions(d?.active || []);
+          setPastSessions(d?.history || []);
+        })
+        .catch(() => {});
+    }
+  }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files?.[0];
@@ -32,39 +42,14 @@ const Profile = () => {
     setAvatarError('');
     setAvatarUploading(true);
     try {
-      const updated = await uploadAvatar(file);
-      updateUser(updated);
+      const updated = await uploadAdminAvatar(file);
+      updateAdmin(updated);
     } catch (err) {
       setAvatarError(extractErrorMessage(err));
     } finally {
       setAvatarUploading(false);
     }
   };
-
-  const handleLinkGoogle = async (credentialResponse) => {
-    setLinkError('');
-    setLinkSuccess('');
-    try {
-      await linkGoogle(credentialResponse.credential);
-      setLinkSuccess('Google account connected.');
-      const refreshed = await getProfile();
-      updateUser(refreshed);
-    } catch (err) {
-      setLinkError(extractErrorMessage(err));
-    }
-  };
-
-  useEffect(() => {
-    getProfile().then(updateUser).catch(() => {});
-    if (tab === 'sessions') {
-      getSessions()
-        .then((d) => {
-          setActiveSessions(d?.active || []);
-          setPastSessions(d?.history || []);
-        })
-        .catch(() => {});
-    }
-  }, [tab]);
 
   const handlePwSubmit = async (e) => {
     e.preventDefault();
@@ -73,22 +58,13 @@ const Profile = () => {
     if (pwForm.new_password !== pwForm.confirm) return setPwError('Passwords do not match.');
     setPwLoading(true);
     try {
-      await changePassword(pwForm.current_password, pwForm.new_password);
+      await changeAdminPassword(pwForm.current_password, pwForm.new_password);
       setPwSuccess('Password changed successfully.');
       setPwForm({ current_password: '', new_password: '', confirm: '' });
     } catch (err) {
       setPwError(extractErrorMessage(err));
     } finally {
       setPwLoading(false);
-    }
-  };
-
-  const handleRevoke = async (id) => {
-    try {
-      await revokeSession(id);
-      setActiveSessions((s) => s.filter((sess) => sess._id !== id));
-    } catch (err) {
-      alert(extractErrorMessage(err));
     }
   };
 
@@ -99,10 +75,13 @@ const Profile = () => {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-bold text-white mb-8">My Account</h1>
+    <div className="space-y-6 max-w-2xl">
+      <div>
+        <h1 className="text-2xl font-bold text-white">My Account</h1>
+        <p className="text-primary-400 text-sm mt-1">Your own admin profile, password, and sessions</p>
+      </div>
 
-      <div className="flex gap-2 mb-8 border-b border-primary-800">
+      <div className="flex gap-2 border-b border-primary-800">
         {TABS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -118,8 +97,8 @@ const Profile = () => {
         <div className="card p-6 max-w-lg">
           <div className="relative w-16 h-16 mb-4">
             <div className="w-16 h-16 rounded-full bg-primary-800 flex items-center justify-center border border-primary-700 overflow-hidden">
-              {user?.avatar_url ? (
-                <img src={user.avatar_url} alt="avatar" className="w-full h-full rounded-full object-cover" />
+              {admin?.avatar_url ? (
+                <img src={admin.avatar_url} alt="avatar" className="w-full h-full rounded-full object-cover" />
               ) : (
                 <User className="h-8 w-8 text-primary-400" />
               )}
@@ -145,38 +124,16 @@ const Profile = () => {
           <div className="space-y-3">
             <div>
               <p className="text-xs text-primary-500">Full Name</p>
-              <p className="text-white font-medium">{user?.first_name} {user?.last_name}</p>
+              <p className="text-white font-medium">{admin?.first_name} {admin?.last_name}</p>
             </div>
             <div>
               <p className="text-xs text-primary-500">Email</p>
-              <p className="text-white font-medium">{user?.email}</p>
+              <p className="text-white font-medium">{admin?.email}</p>
             </div>
             <div>
-              <p className="text-xs text-primary-500">Email Verified</p>
-              <p className={`font-medium text-sm ${user?.email_verified ? 'text-green-400' : 'text-yellow-400'}`}>
-                {user?.email_verified ? 'Verified' : 'Not verified'}
-              </p>
+              <p className="text-xs text-primary-500">Role</p>
+              <p className="text-white font-medium capitalize">{admin?.admin_role}</p>
             </div>
-          </div>
-          <button onClick={logout} className="mt-6 flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors">
-            <LogOut className="h-4 w-4" /> Sign out
-          </button>
-
-          <div className="mt-6 pt-6 border-t border-primary-800">
-            <p className="text-xs text-primary-500 mb-3">Connected accounts</p>
-            {linkError && <div className="bg-red-900/30 border border-red-800 text-red-300 text-sm rounded-lg px-4 py-3 mb-3">{linkError}</div>}
-            {linkSuccess && <div className="bg-green-900/30 border border-green-800 text-green-300 text-sm rounded-lg px-4 py-3 mb-3">{linkSuccess}</div>}
-            {user?.provider === 'google' ? (
-              <p className="text-sm text-primary-300">Google account connected.</p>
-            ) : (
-              <GoogleLogin
-                onSuccess={handleLinkGoogle}
-                onError={() => setLinkError('Could not connect Google account. Please try again.')}
-                theme="filled_black"
-                shape="pill"
-                text="continue_with"
-              />
-            )}
           </div>
         </div>
       )}
@@ -207,7 +164,7 @@ const Profile = () => {
       )}
 
       {tab === 'sessions' && (
-        <div className="space-y-8 max-w-2xl">
+        <div className="space-y-8">
           <div className="space-y-4">
             <div>
               <h2 className="text-lg font-semibold text-white">Active Sessions</h2>
@@ -219,14 +176,14 @@ const Profile = () => {
               <p className="text-primary-400 text-sm">No active sessions found.</p>
             ) : (
               activeSessions.map((sess) => (
-                <div key={sess._id} className="card p-4 flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm text-white font-medium">{deviceLabel(sess)}</p>
+                <div key={sess._id} className="card p-4 flex items-center gap-4">
+                  <div className="w-9 h-9 rounded-full bg-primary-800 flex items-center justify-center flex-shrink-0">
+                    <Monitor className="h-4 w-4 text-accent" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{deviceLabel(sess)}</p>
                     <p className="text-xs text-primary-500 mt-1">Started <TimeAgo date={sess.created_at} /></p>
                   </div>
-                  <button onClick={() => handleRevoke(sess._id)} className="text-primary-500 hover:text-red-400 transition-colors flex-shrink-0">
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
               ))
             )}
@@ -238,9 +195,12 @@ const Profile = () => {
               <p className="text-primary-400 text-sm">No past sessions yet.</p>
             ) : (
               pastSessions.map((sess) => (
-                <div key={sess._id} className="card p-4 flex items-center justify-between gap-4 opacity-70">
-                  <div>
-                    <p className="text-sm text-white font-medium">{deviceLabel(sess)}</p>
+                <div key={sess._id} className="card p-4 flex items-center gap-4 opacity-70">
+                  <div className="w-9 h-9 rounded-full bg-primary-800 flex items-center justify-center flex-shrink-0">
+                    <Monitor className="h-4 w-4 text-primary-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm text-white font-medium truncate">{deviceLabel(sess)}</p>
                     <p className="text-xs text-primary-500 mt-1">
                       Started <TimeAgo date={sess.created_at} />
                       {sess.revoked_at ? <> · ended <TimeAgo date={sess.revoked_at} /></> : ' · expired'}
@@ -256,4 +216,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default Account;

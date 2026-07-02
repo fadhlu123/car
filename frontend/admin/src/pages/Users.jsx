@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Search, X, Lock, Unlock, ShieldOff, ShieldCheck } from 'lucide-react';
+import { RefreshCw, Search, X, Lock, Unlock, Ban, ShieldCheck } from 'lucide-react';
 import { getUsers, getUserDetail, unlockUser, deactivateUser, activateUser } from '../services/admin.users.service';
 import { formatDate } from '../utils/format.utils';
 import { extractErrorMessage } from '../utils/error.utils';
 import { useAuth } from '../context/AuthContext';
+import Avatar from '../components/ui/Avatar';
 
 const isLocked = (user) => user.locked_until && new Date(user.locked_until) > new Date();
 
@@ -22,6 +23,8 @@ const Users = () => {
   const [detail, setDetail]       = useState(null);  // { user, recent_activity }
   const [detailLoading, setDetailLoading] = useState(false);
   const [acting, setActing]       = useState(false);
+
+  const isSelf = detail?.user && (detail.user._id === admin?.sub || detail.user._id === admin?.id);
 
   const load = () => {
     setLoading(true);
@@ -177,14 +180,19 @@ const Users = () => {
                     className="text-white cursor-pointer hover:bg-primary-800/40 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <p className="font-medium">{fullName}</p>
-                      <p className="text-xs text-primary-500">{u.email}</p>
+                      <div className="flex items-center gap-3">
+                        <Avatar url={u.profile?.avatar_url} name={fullName} size="w-9 h-9" />
+                        <div>
+                          <p className="font-medium">{fullName}</p>
+                          <p className="text-xs text-primary-500">{u.email}</p>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 capitalize text-primary-300">{u.role}</td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2">
                         <span className={`px-2 py-1 rounded-full text-xs border ${u.is_active ? 'bg-green-900/40 text-green-300 border-green-800' : 'bg-red-900/40 text-red-300 border-red-800'}`}>
-                          {u.is_active ? 'Active' : 'Deactivated'}
+                          {u.is_active ? 'Active' : 'Banned'}
                         </span>
                         {isLocked(u) && (
                           <span className="px-2 py-1 rounded-full text-xs border bg-yellow-900/40 text-yellow-300 border-yellow-800">Locked</span>
@@ -216,14 +224,25 @@ const Users = () => {
               </div>
             ) : (
               <div className="p-6 space-y-5">
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    url={detail?.user?.profile?.avatar_url}
+                    name={`${detail?.user?.profile?.first_name || ''} ${detail?.user?.profile?.last_name || ''}`}
+                    size="w-12 h-12"
+                    iconSize="h-6 w-6"
+                  />
+                  <div>
+                    <p className="text-white font-semibold">
+                      {detail?.user?.profile?.first_name} {detail?.user?.profile?.last_name}
+                      {isSelf && <span className="text-xs text-accent ml-2">(you)</span>}
+                    </p>
+                    <p className="text-primary-400 text-sm">{detail?.user?.email}</p>
+                  </div>
+                </div>
                 <div>
-                  <p className="text-white font-semibold">
-                    {detail?.user?.profile?.first_name} {detail?.user?.profile?.last_name}
-                  </p>
-                  <p className="text-primary-400 text-sm">{detail?.user?.email}</p>
                   <div className="flex gap-2 mt-2">
                     <span className={`px-2 py-1 rounded-full text-xs border ${detail?.user?.is_active ? 'bg-green-900/40 text-green-300 border-green-800' : 'bg-red-900/40 text-red-300 border-red-800'}`}>
-                      {detail?.user?.is_active ? 'Active' : 'Deactivated'}
+                      {detail?.user?.is_active ? 'Active' : 'Banned'}
                     </span>
                     <span className={`px-2 py-1 rounded-full text-xs border ${detail?.user?.email_verified ? 'bg-blue-900/40 text-blue-300 border-blue-800' : 'bg-primary-800 text-primary-400 border-primary-700'}`}>
                       {detail?.user?.email_verified ? 'Verified' : 'Unverified'}
@@ -235,21 +254,39 @@ const Users = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  {isOwner && detail?.user && isLocked(detail.user) && (
-                    <button disabled={acting} onClick={() => handleUnlock(detail.user._id)} className="btn-outline text-sm flex items-center gap-2 disabled:opacity-60">
+                  {detail?.user && isLocked(detail.user) && (
+                    <button
+                      disabled={acting || !isOwner || isSelf}
+                      onClick={() => handleUnlock(detail.user._id)}
+                      title={isSelf ? "You can't modify your own account here" : !isOwner ? 'Owner only' : undefined}
+                      className="btn-outline text-sm flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
                       <Unlock className="h-4 w-4" /> Unlock
                     </button>
                   )}
-                  {isOwner && (
-                    detail?.user?.is_active ? (
-                      <button disabled={acting} onClick={() => handleDeactivate(detail.user._id)} className="text-sm flex items-center gap-2 px-4 py-2 rounded-xl border border-red-800 text-red-300 hover:bg-red-900/30 transition-colors disabled:opacity-60">
-                        <ShieldOff className="h-4 w-4" /> Deactivate
-                      </button>
-                    ) : (
-                      <button disabled={acting} onClick={() => handleActivate(detail.user._id)} className="text-sm flex items-center gap-2 px-4 py-2 rounded-xl border border-green-800 text-green-300 hover:bg-green-900/30 transition-colors disabled:opacity-60">
-                        <ShieldCheck className="h-4 w-4" /> Activate
-                      </button>
-                    )
+                  {detail?.user?.is_active ? (
+                    <button
+                      disabled={acting || !isOwner || isSelf}
+                      onClick={() => handleDeactivate(detail.user._id)}
+                      title={isSelf ? "You can't modify your own account here" : !isOwner ? 'Owner only' : undefined}
+                      className="text-sm flex items-center gap-2 px-4 py-2 rounded-xl border border-red-800 text-red-300 hover:bg-red-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    >
+                      <Ban className="h-4 w-4" /> Ban
+                    </button>
+                  ) : (
+                    <button
+                      disabled={acting || !isOwner || isSelf}
+                      onClick={() => handleActivate(detail.user._id)}
+                      title={isSelf ? "You can't modify your own account here" : !isOwner ? 'Owner only' : undefined}
+                      className="text-sm flex items-center gap-2 px-4 py-2 rounded-xl border border-green-800 text-green-300 hover:bg-green-900/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                    >
+                      <ShieldCheck className="h-4 w-4" /> Unban
+                    </button>
+                  )}
+                  {isSelf ? (
+                    <p className="text-xs text-primary-500 w-full">This is your own account — these actions aren't available here.</p>
+                  ) : !isOwner && (
+                    <p className="text-xs text-primary-500 w-full">Only the account owner can lock/unlock or ban users.</p>
                   )}
                 </div>
 

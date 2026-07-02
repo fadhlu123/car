@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
+import PasswordInput from '../components/ui/PasswordInput';
 
 const Register = () => {
   const [form, setForm] = useState({
@@ -13,8 +14,6 @@ const Register = () => {
     confirm_password: '',
     registration_key: '',
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showKey, setShowKey] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -114,32 +113,19 @@ const Register = () => {
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                className="input-field pr-11"
-                placeholder="Min. 8 characters"
-                value={form.password}
-                onChange={set('password')}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-400 hover:text-primary-200 transition-colors"
-                onClick={() => setShowPassword((v) => !v)}
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <PasswordInput
+              required
+              placeholder="Min. 8 characters"
+              value={form.password}
+              onChange={set('password')}
+            />
           </div>
 
           {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Confirm Password</label>
-            <input
-              type={showPassword ? 'text' : 'password'}
+            <PasswordInput
               required
-              className="input-field"
               placeholder="Repeat password"
               value={form.confirm_password}
               onChange={set('confirm_password')}
@@ -152,23 +138,12 @@ const Register = () => {
               Registration Key
               <span className="ml-2 text-xs text-primary-500">(provided by your system owner)</span>
             </label>
-            <div className="relative">
-              <input
-                type={showKey ? 'text' : 'password'}
-                required
-                className="input-field pr-11"
-                placeholder="Secret key"
-                value={form.registration_key}
-                onChange={set('registration_key')}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-primary-400 hover:text-primary-200 transition-colors"
-                onClick={() => setShowKey((v) => !v)}
-              >
-                {showKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
+            <PasswordInput
+              required
+              placeholder="Secret key"
+              value={form.registration_key}
+              onChange={set('registration_key')}
+            />
           </div>
 
           <button

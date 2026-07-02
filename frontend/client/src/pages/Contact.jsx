@@ -5,9 +5,7 @@ import { useSSE } from '../hooks/useSSE';
 import { getContactInfo } from '../services/content.service';
 import { getConversation, sendMessage, editMessage } from '../services/contact.service';
 import { extractErrorMessage } from '../utils/error.utils';
-
-const timeOf = (dateString) =>
-  new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+import TimeAgo from '../components/ui/TimeAgo';
 
 const Contact = () => {
   const { user } = useAuth();
@@ -145,7 +143,7 @@ const Contact = () => {
                       )}
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-[10px] opacity-60">
-                          {timeOf(m.created_at)}{m.edited_at ? ' · edited' : ''}
+                          <TimeAgo date={m.created_at} />{m.edited_at ? ' · edited' : ''}
                         </span>
                         {isOwn && m.editable && !isEditing && (
                           <button onClick={() => startEdit(m)} className="opacity-60 hover:opacity-100">

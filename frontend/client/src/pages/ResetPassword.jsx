@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { resetPassword } from '../services/auth.service';
 import { extractErrorMessage } from '../utils/error.utils';
+import PasswordInput from '../components/ui/PasswordInput';
 
 const ResetPassword = () => {
   const [form, setForm] = useState({ email: '', otp: '', new_password: '', confirm: '' });
@@ -64,11 +65,11 @@ const ResetPassword = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">New Password</label>
-            <input name="new_password" type="password" required minLength={8} className="input-field" value={form.new_password} onChange={handleChange} />
+            <PasswordInput name="new_password" required minLength={8} value={form.new_password} onChange={handleChange} />
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Confirm New Password</label>
-            <input name="confirm" type="password" required className="input-field" value={form.confirm} onChange={handleChange} />
+            <PasswordInput name="confirm" required value={form.confirm} onChange={handleChange} />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full disabled:opacity-60">
             {loading ? 'Resetting...' : 'Reset Password'}

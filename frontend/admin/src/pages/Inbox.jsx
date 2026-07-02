@@ -3,9 +3,7 @@ import { RefreshCw, Send, MessageSquare } from 'lucide-react';
 import { listConversations, getConversation, sendReply, markSeen } from '../services/contact.service';
 import { useAdminSSE } from '../hooks/useAdminSSE';
 import { extractErrorMessage } from '../utils/error.utils';
-
-const timeOf = (dateString) =>
-  new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+import TimeAgo from '../components/ui/TimeAgo';
 
 const Inbox = () => {
   const [conversations, setConversations] = useState([]);
@@ -155,7 +153,7 @@ const Inbox = () => {
                           {!isOwn && <p className="text-xs font-semibold opacity-70 mb-0.5">{m.sender_name}</p>}
                           <p className="text-sm whitespace-pre-wrap break-words">{m.body}</p>
                           <span className="text-[10px] opacity-60 block mt-1">
-                            {timeOf(m.created_at)}{m.edited_at ? ' · edited' : ''}
+                            <TimeAgo date={m.created_at} />{m.edited_at ? ' · edited' : ''}
                           </span>
                         </div>
                       </div>

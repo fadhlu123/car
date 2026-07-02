@@ -9,20 +9,22 @@ import {
   revokeSession,
   revokeAllAdminSessions,
   getActiveSessions,
+  getSessionHistory,
 } from './auth.session.service';
 import { logEvent } from './auth.audit.service';
 import { AuthResult, AdminRole, UserSummary } from '../types/auth.types';
 import { env } from '../../../configs/env.config';
+import { changePassword } from './auth.password.service';
 
 const logger = createLogger('admin-auth');
 
 const LOCKOUT_THRESHOLD  = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000;
+const LOCKOUT_DURATION_MS = env.LOCKOUT_DURATION_MINUTES * 60 * 1000;
 
 const ERRORS = {
   INVALID_CREDENTIALS: 'Invalid email or password',
   ACCOUNT_INACTIVE:    'Admin account has been deactivated',
-  ACCOUNT_LOCKED:      'Account temporarily locked. Try again in 15 minutes.',
+  ACCOUNT_LOCKED:      `Account temporarily locked. Try again in ${env.LOCKOUT_DURATION_MINUTES} minutes.`,
   USER_NOT_FOUND:      'Admin account not found',
   EMAIL_IN_USE:        'An admin account with this email already exists',
   INVALID_REG_KEY:     'Invalid registration key',
@@ -182,5 +184,18 @@ export const getAdminProfile = async (adminId: string): Promise<UserSummary> => 
   return toSummary(user);
 };
 
-export const listAdminSessions = (adminId: string) =>
-  getActiveSessions(adminId, true);
+export const listAdminSessions = async (adminId: string) => {
+  const [active, history] = await Promise.all([
+    getActiveSessions(adminId, true),
+    getSessionHistory(adminId, true),
+  ]);
+  return { active, history };
+};
+
+export const changeAdminPassword = (
+  adminId: string,
+  email: string,
+  currentPassword: string,
+  newPassword: string,
+  ctx: Ctx
+): Promise<void> => changePassword(adminId, email, currentPassword, newPassword, ctx, true);

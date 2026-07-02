@@ -13,7 +13,7 @@ import Users from './pages/Users';
 import Notifications from './pages/Notifications';
 import Broadcasts from './pages/Broadcasts';
 import AcceptInvite from './pages/AcceptInvite';
-import Sessions from './pages/Sessions';
+import Account from './pages/Account';
 import AuditLog from './pages/AuditLog';
 import Inbox from './pages/Inbox';
 import Content from './pages/Content';
@@ -42,7 +42,7 @@ function App() {
             <Route path="team"     element={<Team />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="broadcasts" element={<Broadcasts />} />
-            <Route path="sessions" element={<Sessions />} />
+            <Route path="account" element={<Account />} />
             <Route path="audit-log" element={<AuditLog />} />
             <Route path="inbox" element={<Inbox />} />
             <Route path="content" element={<Content />} />

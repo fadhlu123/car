@@ -45,7 +45,8 @@ router.post('/admin/login',          authLimiter, ...admin.adminLogin);
 router.post('/admin/logout',         adminProtect, admin.adminLogout);
 router.post('/admin/refresh',        ...admin.adminRefresh);
 router.get( '/admin/me',             adminProtect, admin.getAdminProfile);
-router.get( '/admin/sessions',       adminProtect, admin.getAdminSessions);
+router.get(  '/admin/sessions',       adminProtect, admin.getAdminSessions);
+router.patch('/admin/change-password', adminProtect, ...admin.changePassword);
 router.get( '/admin/audit-logs',     adminProtect, ...admin.getAuditLogs);
 
 export default router;

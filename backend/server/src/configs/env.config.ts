@@ -32,6 +32,9 @@ const envSchema = z.object({
   GITHUB_CLIENT_ID: z.string().optional(),
   GITHUB_CLIENT_SECRET: z.string().optional(),
 
+  // Account lockout — minutes a user is locked out after repeated failed logins
+  LOCKOUT_DURATION_MINUTES: z.coerce.number().int().min(1).default(120),
+
   // Web Push / VAPID — Phase 6a
   // Generate with: npx web-push generate-vapid-keys
   VAPID_PUBLIC_KEY:  z.string().optional(),

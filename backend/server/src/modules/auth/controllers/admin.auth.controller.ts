@@ -22,6 +22,11 @@ const registerSchema = z.object({
 
 const refreshSchema = z.object({ refresh_token: z.string().min(1) });
 
+const changePasswordSchema = z.object({
+  current_password: z.string().min(1),
+  new_password:      z.string().min(8, 'Password must be at least 8 characters'),
+});
+
 const auditQuerySchema = z.object({
   userId:    z.string().optional(),
   email:     z.string().optional(),
@@ -93,6 +98,22 @@ export const getAdminSessions = async (req: Request, res: Response, next: NextFu
     sendSuccess(res, sessions, 'Sessions retrieved');
   } catch (err) { next(err); }
 };
+
+export const changePassword = [
+  validate(changePasswordSchema, 'body'),
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await svc.changeAdminPassword(
+        req.admin!.sub,
+        req.admin!.email,
+        req.body.current_password,
+        req.body.new_password,
+        extractDeviceContext(req)
+      );
+      sendNoContent(res);
+    } catch (err) { next(err); }
+  },
+];
 
 export const getAuditLogs = [
   validate(auditQuerySchema, 'query'),

@@ -6,7 +6,7 @@ import { getUserModel } from '../../../models/user.model';
 import { generateAndStoreOtp, verifyOtp, invalidateOtps } from './auth.otp.service';
 import { logEvent } from './auth.audit.service';
 import { sendPasswordResetEmail } from './auth.notify.service';
-import { revokeAllUserSessions } from './auth.session.service';
+import { revokeAllUserSessions, revokeAllAdminSessions } from './auth.session.service';
 
 const logger = createLogger('auth-password');
 
@@ -70,7 +70,8 @@ export const changePassword = async (
   email: string,
   currentPassword: string,
   newPassword: string,
-  ctx: RequestContext
+  ctx: RequestContext,
+  isAdmin = false
 ): Promise<void> => {
   const User = await getUserModel();
   const user = await User.findById(userId);
@@ -92,7 +93,8 @@ export const changePassword = async (
   }
 
   // Revoke all sessions except current — caller will handle re-issuing if needed
-  await revokeAllUserSessions(userId);
+  if (isAdmin) await revokeAllAdminSessions(userId);
+  else await revokeAllUserSessions(userId);
 
   await logEvent({
     userId, email,

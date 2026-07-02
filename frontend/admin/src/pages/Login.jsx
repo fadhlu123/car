@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { extractErrorMessage } from '../utils/error.utils';
+import PasswordInput from '../components/ui/PasswordInput';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -56,10 +57,8 @@ const Login = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-primary-300 mb-1">Password</label>
-            <input
-              type="password"
+            <PasswordInput
               required
-              className="input-field"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />

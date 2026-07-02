@@ -160,3 +160,14 @@ export const getActiveSessions = async (userId: string, isAdmin: boolean) => {
     expires_at: { $gt: new Date() },
   }).sort({ created_at: -1 }).lean();
 };
+
+// Every session (revoked or expired) for this user/admin, most recent first,
+// capped so the list can't grow unbounded for a long-lived account.
+export const getSessionHistory = async (userId: string, isAdmin: boolean, limit = 20) => {
+  const Session = await getSessionModel();
+  return Session.find({
+    user_id:  userId,
+    is_admin: isAdmin,
+    $or: [{ revoked_at: { $ne: null } }, { expires_at: { $lte: new Date() } }],
+  }).sort({ created_at: -1 }).limit(limit).lean();
+};
